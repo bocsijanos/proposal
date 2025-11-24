@@ -168,7 +168,7 @@ export default async function ProposalPage({ params }: PageProps) {
       <main className="bg-[var(--color-background-alt)] w-full">
         <div className="container-custom py-12 md:py-16 lg:py-20">
           <div className="space-y-8 md:space-y-10 lg:space-y-12">
-            {proposal.blocks.map((block) => (
+            {proposal.blocks.map((block: any) => (
               <div key={block.id} className="animate-fadeIn" data-block-id={block.id}>
                 <BlockRenderer
                   block={block}
