@@ -80,8 +80,8 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Templates synchronized successfully',
       totalBlocks: proposal.blocks.length,
-      enabled: proposal.blocks.filter(b => b.isEnabled).length,
-      disabled: proposal.blocks.filter(b => !b.isEnabled).length,
+      enabled: proposal.blocks.filter((b: any) => b.isEnabled).length,
+      disabled: proposal.blocks.filter((b: any) => !b.isEnabled).length,
       templates: results,
     });
   } catch (error) {
