@@ -40,6 +40,7 @@ async function main() {
       blockType: BlockType.HERO,
       name: 'Standard Hero',
       description: 'Teljes szélességű hero háttérképpel és CTA-val',
+      brand: Brand.BOOM,
       defaultContent: {
         version: '1.0',
         heading: 'Árajánlat 2025',
@@ -55,6 +56,7 @@ async function main() {
       blockType: BlockType.VALUE_PROP,
       name: '2 Oszlopos Értékajánlat',
       description: 'Értékajánlat 2 oszlopban középső ikonnal',
+      brand: Brand.BOOM,
       defaultContent: {
         version: '1.0',
         heading: 'Miben nyújtunk többet?',
@@ -79,6 +81,7 @@ async function main() {
       blockType: BlockType.PLATFORM_FEATURES,
       name: 'Platform Funkciók',
       description: 'Platform logó és bullet pontok',
+      brand: Brand.BOOM,
       defaultContent: {
         version: '1.0',
         platformName: 'Google Ads',
@@ -100,6 +103,7 @@ async function main() {
       blockType: BlockType.PRICING_TABLE,
       name: '3 Oszlopos Árazás',
       description: 'Háromoszlopos árazási tábla kedvezménnyel',
+      brand: Brand.BOOM,
       defaultContent: {
         version: '1.0',
         heading: 'Válaszd ki a csomagod',
@@ -164,6 +168,7 @@ async function main() {
       blockType: BlockType.GUARANTEES,
       name: 'Garanciák',
       description: '3 oszlopos garancia szekció',
+      brand: Brand.BOOM,
       defaultContent: {
         version: '1.0',
         heading: 'Mire számíthatsz?',
@@ -185,6 +190,7 @@ async function main() {
       blockType: BlockType.PROCESS_TIMELINE,
       name: 'Folyamat Timeline',
       description: 'Lépésről lépésre folyamat megjelenítése',
+      brand: Brand.BOOM,
       defaultContent: {
         version: '1.0',
         heading: 'Hogyan működünk együtt?',
@@ -221,6 +227,7 @@ async function main() {
       blockType: BlockType.CLIENT_LOGOS,
       name: 'Ügyfél Logók',
       description: 'Grid elrendezésű logó showcase',
+      brand: Brand.BOOM,
       defaultContent: {
         version: '1.0',
         heading: 'Partnereink',
@@ -240,6 +247,7 @@ async function main() {
       blockType: BlockType.SERVICES_GRID,
       name: 'Szolgáltatások Grid',
       description: 'Kártyák elrendezésben szolgáltatások',
+      brand: Brand.BOOM,
       defaultContent: {
         version: '1.0',
         heading: 'További szolgáltatásaink',
@@ -274,6 +282,7 @@ async function main() {
       blockType: BlockType.TEXT_BLOCK,
       name: 'Szöveges Blokk',
       description: 'Egyszerű szöveges tartalom',
+      brand: Brand.BOOM,
       defaultContent: {
         version: '1.0',
         heading: 'Részletek',
@@ -285,6 +294,7 @@ async function main() {
       blockType: BlockType.TWO_COLUMN,
       name: 'Két Oszlop',
       description: 'Kép és szöveg kombinált layout',
+      brand: Brand.BOOM,
       defaultContent: {
         version: '1.0',
         imageUrl: '/images/placeholder.jpg',
@@ -300,6 +310,7 @@ async function main() {
       blockType: BlockType.CTA,
       name: 'Call-to-Action',
       description: 'Felhívás cselekvésre szekció',
+      brand: Brand.BOOM,
       defaultContent: {
         version: '1.0',
         heading: 'Készen állsz az indulásra?',
@@ -321,6 +332,7 @@ async function main() {
       blockType: BlockType.STATS,
       name: 'Statisztikák',
       description: 'Számok és eredmények megjelenítése',
+      brand: Brand.BOOM,
       defaultContent: {
         version: '1.0',
         heading: 'Eredményeink számokban',
