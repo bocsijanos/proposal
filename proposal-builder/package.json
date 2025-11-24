@@ -7,6 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "init-db": "node scripts/init-db.mjs",
     "seed:sample": "tsx scripts/create-sample.ts"
   },
   "prisma": {
