@@ -1,0 +1,266 @@
+// Prisma Schema for Proposal Builder Application
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USER MANAGEMENT
+// ============================================================================
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  passwordHash  String     @map("password_hash")
+  name          String?
+  role          UserRole   @default(ADMIN)
+  isActive      Boolean    @default(true) @map("is_active")
+  lastLoginAt   DateTime?  @map("last_login_at")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  proposals     Proposal[]
+  accounts      Account[]
+  sessions      Session[]
+
+  @@index([email])
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  SUPER_ADMIN
+}
+
+// ============================================================================
+// NEXTAUTH MODELS
+// ============================================================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================================================
+// PROPOSAL MANAGEMENT
+// ============================================================================
+
+model Proposal {
+  id                String         @id @default(cuid())
+  slug              String         @unique
+  clientName        String         @map("client_name")
+  clientContactName String?        @map("client_contact_name")
+  clientPhone       String?        @map("client_phone")
+  clientEmail       String?        @map("client_email")
+  brand             Brand
+  status            ProposalStatus @default(DRAFT)
+
+  // Metadata
+  viewCount      Int            @default(0) @map("view_count")
+  lastViewedAt   DateTime?      @map("last_viewed_at")
+  isTemplate     Boolean        @default(false) @map("is_template")
+  clonedFromId   String?        @map("cloned_from_id")
+
+  // Ownership
+  createdById    String         @map("created_by_id")
+  createdBy      User           @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdByName  String?        @map("created_by_name") // Denormalized for public view
+
+  // Timestamps
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  publishedAt    DateTime?      @map("published_at")
+
+  // Relations
+  blocks         ProposalBlock[]
+  versions       ProposalVersion[]
+  clonedFrom     Proposal?      @relation("ProposalClones", fields: [clonedFromId], references: [id], onDelete: SetNull)
+  clones         Proposal[]     @relation("ProposalClones")
+
+  @@index([slug])
+  @@index([createdById])
+  @@index([brand])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@index([clientName])
+  @@index([isTemplate])
+  @@map("proposals")
+}
+
+enum Brand {
+  BOOM
+  AIBOOST
+}
+
+enum ProposalStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// ============================================================================
+// BLOCK MANAGEMENT
+// ============================================================================
+
+model ProposalBlock {
+  id             String    @id @default(cuid())
+  proposalId     String    @map("proposal_id")
+  proposal       Proposal  @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  // Block Configuration
+  blockType      BlockType @map("block_type")
+  displayOrder   Int       @map("display_order")
+  isEnabled      Boolean   @default(true) @map("is_enabled")
+
+  // Block Content (JSONB for flexibility)
+  content        Json
+
+  // Template Reference
+  templateId     String?   @map("template_id")
+  template       BlockTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  // Timestamps
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@unique([proposalId, displayOrder])
+  @@index([proposalId, displayOrder])
+  @@index([proposalId, isEnabled])
+  @@index([blockType])
+  @@map("proposal_blocks")
+}
+
+enum BlockType {
+  HERO
+  VALUE_PROP
+  PLATFORM_FEATURES
+  PRICING_TABLE
+  GUARANTEES
+  PROCESS_TIMELINE
+  CLIENT_LOGOS
+  SERVICES_GRID
+  TEXT_BLOCK
+  TWO_COLUMN
+  CTA
+  STATS
+}
+
+// ============================================================================
+// BLOCK TEMPLATES
+// ============================================================================
+
+model BlockTemplate {
+  id             String    @id @default(cuid())
+  blockType      BlockType @map("block_type")
+  name           String
+  description    String?
+  brand          Brand     @default(BOOM) // BOOM or AIBOOST
+
+  // Default content structure
+  defaultContent Json      @map("default_content")
+
+  // Preview
+  thumbnailUrl   String?   @map("thumbnail_url")
+
+  // Ordering
+  displayOrder   Int       @default(0) @map("display_order")
+  isActive       Boolean   @default(true) @map("is_active")
+
+  // Usage tracking
+  usageCount     Int       @default(0) @map("usage_count")
+
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  blocks         ProposalBlock[]
+
+  @@unique([blockType, name, brand])
+  @@index([blockType, isActive])
+  @@index([brand, isActive])
+  @@index([displayOrder])
+  @@map("block_templates")
+}
+
+// ============================================================================
+// VERSIONING
+// ============================================================================
+
+model ProposalVersion {
+  id             String    @id @default(cuid())
+  proposalId     String    @map("proposal_id")
+  proposal       Proposal  @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  versionNumber  Int       @map("version_number")
+  snapshot       Json
+
+  changeDescription String? @map("change_description")
+  createdById    String    @map("created_by_id")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@unique([proposalId, versionNumber])
+  @@index([proposalId, createdAt(sort: Desc)])
+  @@map("proposal_versions")
+}
+
+// ============================================================================
+// ANALYTICS
+// ============================================================================
+
+model ProposalView {
+  id             String    @id @default(cuid())
+  proposalId     String    @map("proposal_id")
+
+  // Visitor info
+  ipAddress      String?   @map("ip_address")
+  userAgent      String?   @map("user_agent")
+  referrer       String?
+
+  // Geographic data
+  country        String?
+  city           String?
+
+  viewedAt       DateTime  @default(now()) @map("viewed_at")
+
+  @@index([proposalId, viewedAt(sort: Desc)])
+  @@index([viewedAt(sort: Desc)])
+  @@map("proposal_views")
+}
