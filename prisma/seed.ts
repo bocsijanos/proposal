@@ -354,9 +354,10 @@ async function main() {
   for (const template of blockTemplates) {
     await prisma.blockTemplate.upsert({
       where: {
-        blockType_name: {
+        blockType_name_brand: {
           blockType: template.blockType,
           name: template.name,
+          brand: template.brand,
         },
       },
       update: {
