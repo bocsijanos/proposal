@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
 
     if (templates.length > 0) {
       // Use templates from database, ensuring unique displayOrder
-      defaultBlocks = templates.map((template, index) => ({
+      defaultBlocks = templates.map((template: any, index) => ({
         blockType: template.blockType,
         displayOrder: index, // Always use index to ensure unique displayOrder
         isEnabled: template.isActive,
