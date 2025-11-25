@@ -17,9 +17,10 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    const { defaultContent, description, isActive, displayOrder, brand } = body;
+    const { name, defaultContent, description, isActive, displayOrder, brand } = body;
 
     const updateData: any = {
+      name,
       defaultContent,
       description,
       isActive,

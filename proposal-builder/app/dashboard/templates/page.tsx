@@ -34,9 +34,16 @@ interface BlockTemplate {
   brand: 'BOOM' | 'AIBOOST';
 }
 
+interface EditingTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
 interface SortableTemplateItemProps {
   template: BlockTemplate;
   editingId: string | null;
+  editingMetadata: EditingTemplate | null;
   viewMode: 'preview' | 'compact';
   isDeleting: boolean;
   onEdit: (id: string) => void;
@@ -44,11 +51,17 @@ interface SortableTemplateItemProps {
   onSave: (id: string, newContent: any, newBrand?: 'BOOM' | 'AIBOOST') => void;
   onCancel: () => void;
   onDelete: (id: string) => void;
+  onMoveToEnd: (id: string) => void;
+  onEditMetadata: (id: string) => void;
+  onSaveMetadata: (id: string, name: string, description: string | null) => void;
+  onCancelMetadata: () => void;
+  onMetadataChange: (field: 'name' | 'description', value: string) => void;
 }
 
 function SortableTemplateItem({
   template,
   editingId,
+  editingMetadata,
   viewMode,
   isDeleting,
   onEdit,
@@ -56,6 +69,11 @@ function SortableTemplateItem({
   onSave,
   onCancel,
   onDelete,
+  onMoveToEnd,
+  onEditMetadata,
+  onSaveMetadata,
+  onCancelMetadata,
+  onMetadataChange,
 }: SortableTemplateItemProps) {
   const {
     attributes,
@@ -85,7 +103,7 @@ function SortableTemplateItem({
       style={style}
       className="relative group transition-all"
     >
-      {/* Drag Handle and Delete Button */}
+      {/* Drag Handle, Move to End, and Delete Button */}
       <div className="absolute -left-12 top-6 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
         <button
           {...attributes}
@@ -94,6 +112,13 @@ function SortableTemplateItem({
           title="Húzd ide a sablon átrendezéséhez"
         >
           <span className="text-[var(--color-muted)]">⋮⋮</span>
+        </button>
+        <button
+          onClick={() => onMoveToEnd(template.id)}
+          className="w-8 h-8 rounded bg-white border border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-blue-50 flex items-center justify-center"
+          title="Lista végére mozgatás"
+        >
+          <span className="text-[var(--color-primary)]">↓</span>
         </button>
         <button
           onClick={() => {
@@ -115,38 +140,91 @@ function SortableTemplateItem({
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-lg font-semibold text-[var(--color-text)]">
-              {template.blockType.replace(/_/g, ' ')}
-            </h3>
-            {template.description && (
-              <p className="text-sm text-[var(--color-muted)] mt-1">
-                {template.description}
-              </p>
+          <div className="flex-1">
+            {editingMetadata?.id === template.id ? (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={editingMetadata.name}
+                  onChange={(e) => onMetadataChange('name', e.target.value)}
+                  className="w-full px-3 py-2 border border-[var(--color-border)] rounded-md text-lg font-semibold text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                  placeholder="Tartalomjegyzék név"
+                />
+                <input
+                  type="text"
+                  value={editingMetadata.description || ''}
+                  onChange={(e) => onMetadataChange('description', e.target.value)}
+                  className="w-full px-3 py-2 border border-[var(--color-border)] rounded-md text-sm text-[var(--color-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                  placeholder="Leírás (opcionális)"
+                />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => onSaveMetadata(template.id, editingMetadata.name, editingMetadata.description)}
+                    size="sm"
+                    variant="default"
+                  >
+                    💾 Mentés
+                  </Button>
+                  <Button
+                    onClick={onCancelMetadata}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Mégse
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-[var(--color-text)]">
+                    {template.name}
+                  </h3>
+                  <button
+                    onClick={() => onEditMetadata(template.id)}
+                    className="text-[var(--color-muted)] hover:text-[var(--color-primary)] transition-colors"
+                    title="Név és leírás szerkesztése"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
+                  </button>
+                </div>
+                <p className="text-xs text-[var(--color-muted)] mt-0.5">
+                  Blokk típus: {template.blockType.replace(/_/g, ' ')}
+                </p>
+                {template.description && (
+                  <p className="text-sm text-[var(--color-muted)] mt-1">
+                    {template.description}
+                  </p>
+                )}
+              </div>
             )}
           </div>
-          <div className="flex items-center gap-3">
-            {/* Active toggle */}
-            <button
-              onClick={() => onToggleActive(template.id, template.isActive)}
-              className={`px-3 py-1 text-xs font-medium rounded-full ${
-                template.isActive
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-gray-100 text-gray-800'
-              }`}
-            >
-              {template.isActive ? 'Aktív' : 'Inaktív'}
-            </button>
+          {!editingMetadata && (
+            <div className="flex items-center gap-3">
+              {/* Active toggle */}
+              <button
+                onClick={() => onToggleActive(template.id, template.isActive)}
+                className={`px-3 py-1 text-xs font-medium rounded-full ${
+                  template.isActive
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}
+              >
+                {template.isActive ? 'Aktív' : 'Inaktív'}
+              </button>
 
-            {/* Edit button */}
-            <Button
-              onClick={() => onEdit(template.id)}
-              variant={editingId === template.id ? 'default' : 'outline'}
-              size="sm"
-            >
-              {editingId === template.id ? '✏️ Szerkesztés...' : '✏️ Szerkesztés'}
-            </Button>
-          </div>
+              {/* Edit button */}
+              <Button
+                onClick={() => onEdit(template.id)}
+                variant={editingId === template.id ? 'default' : 'outline'}
+                size="sm"
+              >
+                {editingId === template.id ? '✏️ Szerkesztés...' : '✏️ Szerkesztés'}
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Preview - Preview Mode */}
@@ -198,6 +276,7 @@ export default function TemplatesPage() {
   const [templates, setTemplates] = useState<BlockTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingMetadata, setEditingMetadata] = useState<EditingTemplate | null>(null);
   const [saving, setSaving] = useState(false);
   const [viewMode, setViewMode] = useState<'preview' | 'compact'>('preview');
   const [selectedBrand, setSelectedBrand] = useState<'BOOM' | 'AIBOOST'>('BOOM');
@@ -369,6 +448,83 @@ export default function TemplatesPage() {
     }
   };
 
+  const handleMoveToEnd = async (templateId: string) => {
+    setTemplates((items) => {
+      const templateIndex = items.findIndex((item) => item.id === templateId);
+      if (templateIndex === -1 || templateIndex === items.length - 1) {
+        // Already at the end or not found
+        return items;
+      }
+
+      // Move the template to the end
+      const newItems = [...items];
+      const [movedItem] = newItems.splice(templateIndex, 1);
+      newItems.push(movedItem);
+
+      // Update displayOrder for all items
+      const updatedItems = newItems.map((item, index) => ({
+        ...item,
+        displayOrder: index,
+      }));
+
+      // Save the new order to the backend
+      setTimeout(() => saveTemplateOrder(updatedItems), 0);
+      return updatedItems;
+    });
+  };
+
+  const handleEditMetadata = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId);
+    if (template) {
+      setEditingMetadata({
+        id: template.id,
+        name: template.name,
+        description: template.description,
+      });
+    }
+  };
+
+  const handleSaveMetadata = async (templateId: string, name: string, description: string | null) => {
+    if (!name.trim()) {
+      alert('A név nem lehet üres!');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await fetch(`/api/block-templates/${templateId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          description: description?.trim() || null,
+        }),
+      });
+
+      if (response.ok) {
+        await fetchTemplates();
+        setEditingMetadata(null);
+      }
+    } catch (error) {
+      console.error('Error saving metadata:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancelMetadata = () => {
+    setEditingMetadata(null);
+  };
+
+  const handleMetadataChange = (field: 'name' | 'description', value: string) => {
+    if (editingMetadata) {
+      setEditingMetadata({
+        ...editingMetadata,
+        [field]: value,
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -470,6 +626,7 @@ export default function TemplatesPage() {
                   key={template.id}
                   template={template}
                   editingId={editingId}
+                  editingMetadata={editingMetadata}
                   viewMode={viewMode}
                   isDeleting={deletingIds.has(template.id)}
                   onEdit={handleEdit}
@@ -477,6 +634,11 @@ export default function TemplatesPage() {
                   onSave={handleSave}
                   onCancel={handleCancel}
                   onDelete={handleDelete}
+                  onMoveToEnd={handleMoveToEnd}
+                  onEditMetadata={handleEditMetadata}
+                  onSaveMetadata={handleSaveMetadata}
+                  onCancelMetadata={handleCancelMetadata}
+                  onMetadataChange={handleMetadataChange}
                 />
               ))}
             </div>
