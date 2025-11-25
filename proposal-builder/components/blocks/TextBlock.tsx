@@ -9,7 +9,9 @@ interface TextBlockProps {
 }
 
 export function TextBlock({ content, brand }: TextBlockProps) {
-  const { heading, body, alignment = 'left', maxWidth = 'medium' } = content;
+  // Support both 'body' and 'content' field names for backwards compatibility
+  const body = content.body || (content as any).content || '';
+  const { heading, alignment = 'left', maxWidth = 'medium' } = content;
 
   const alignmentClasses = {
     left: 'text-left',
