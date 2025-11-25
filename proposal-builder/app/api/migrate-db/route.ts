@@ -231,21 +231,31 @@ export async function POST(request: NextRequest) {
     // Split migration into individual statements and execute them
     console.log('Creating initial schema...');
 
-    // Execute the full migration as one transaction using $executeRawUnsafe
-    // Note: We need to use $transaction to execute multiple statements
-    await prisma.$transaction(async (tx) => {
-      // Split the INIT_MIGRATION into individual statements
-      const statements = INIT_MIGRATION
-        .split(';')
-        .map(s => s.trim())
-        .filter(s => s.length > 0 && !s.startsWith('--'));
+    // Split by semicolon and filter out comments and empty lines
+    const allStatements = INIT_MIGRATION
+      .split('\n')
+      .filter(line => {
+        const trimmed = line.trim();
+        return trimmed.length > 0 && !trimmed.startsWith('--');
+      })
+      .join('\n')
+      .split(';')
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
 
-      for (const statement of statements) {
-        if (statement) {
-          await tx.$executeRawUnsafe(statement + ';');
-        }
+    console.log(`Executing ${allStatements.length} SQL statements...`);
+
+    // Execute each statement individually (not in transaction to avoid timeout)
+    for (let i = 0; i < allStatements.length; i++) {
+      const statement = allStatements[i];
+      try {
+        console.log(`Executing statement ${i + 1}/${allStatements.length}`);
+        await prisma.$executeRawUnsafe(statement);
+      } catch (error) {
+        console.error(`Failed on statement ${i + 1}:`, statement.substring(0, 100));
+        throw error;
       }
-    });
+    }
 
     // Add bonus block types
     console.log('Adding bonus block types...');
