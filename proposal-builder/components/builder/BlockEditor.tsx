@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { BlockRenderer } from '@/components/builder/BlockRenderer';
 
 interface BlockEditorProps {
   block: {
@@ -68,9 +69,20 @@ export function BlockEditor({ block, onSave, onCancel, allowBrandChange = false 
     }, 0);
   };
 
+  // Parse JSON for live preview (with error handling)
+  let parsedContent;
+  let parseError = false;
+  try {
+    parsedContent = JSON.parse(content);
+  } catch (e) {
+    parseError = true;
+    parsedContent = block.content; // Fallback to original content
+  }
+
   return (
-    <div className="mt-4 p-6 bg-gray-50 rounded-lg border border-gray-200">
-      <div className="mb-4">
+    <div className="mt-4 bg-gray-50 rounded-lg border border-gray-200">
+      {/* Header with controls */}
+      <div className="p-6 border-b border-gray-200 bg-white rounded-t-lg">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-lg font-semibold text-[var(--color-text)]">
             Blokk szerkesztése: {block.blockType.replace(/_/g, ' ')}
@@ -155,31 +167,80 @@ export function BlockEditor({ block, onSave, onCancel, allowBrandChange = false 
           </div>
         </div>
         <p className="text-sm text-[var(--color-muted)]">
-          Szerkeszd meg a tartalmat JSON formátumban. Használd a "Beszúrható mezők" gombot dinamikus értékek hozzáadásához.
+          Szerkeszd meg a tartalmat JSON formátumban. Az élő előnézet azonnal frissül ahogy írsz.
         </p>
       </div>
 
-      <textarea
-        ref={textareaRef}
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        className="w-full h-96 font-mono text-sm p-4 rounded border border-gray-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
-        placeholder="{ ... }"
-      />
-
-      {error && (
-        <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-          {error}
+      {/* Two-column layout: Editor + Live Preview */}
+      <div className="grid grid-cols-2 gap-4 p-6">
+        {/* Left: JSON Editor */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-[var(--color-text)]">
+              JSON Szerkesztő
+            </label>
+            {parseError && (
+              <span className="text-xs text-red-600 font-medium">
+                ⚠️ Hibás JSON szintaxis
+              </span>
+            )}
+          </div>
+          <textarea
+            ref={textareaRef}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="w-full h-[500px] font-mono text-sm p-4 rounded border border-gray-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] bg-white"
+            placeholder="{ ... }"
+          />
         </div>
-      )}
 
-      <div className="mt-4 flex items-center gap-3">
-        <Button onClick={handleSave} size="sm">
-          💾 Mentés
-        </Button>
-        <Button onClick={onCancel} variant="outline" size="sm">
-          Mégse
-        </Button>
+        {/* Right: Live Preview */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-[var(--color-text)]">
+            Élő Előnézet
+          </label>
+          <div className="border border-gray-300 rounded bg-white overflow-auto h-[500px]">
+            {!parseError ? (
+              <BlockRenderer
+                block={{
+                  id: block.id,
+                  blockType: block.blockType,
+                  displayOrder: 0,
+                  isEnabled: true,
+                  content: parsedContent,
+                } as any}
+                brand={brand}
+                proposalData={{
+                  clientName: '{{clientName}}',
+                  createdByName: '{{createdByName}}',
+                } as any}
+              />
+            ) : (
+              <div className="p-4 text-center">
+                <div className="text-red-500 text-sm">
+                  ⚠️ A JSON szintaxis hibás. Javítsd a bal oldali szerkesztőben.
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Footer with action buttons */}
+      <div className="p-6 border-t border-gray-200 bg-white rounded-b-lg">
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+        <div className="flex items-center gap-3">
+          <Button onClick={handleSave} size="sm">
+            💾 Mentés
+          </Button>
+          <Button onClick={onCancel} variant="outline" size="sm">
+            Mégse
+          </Button>
+        </div>
       </div>
     </div>
   );
