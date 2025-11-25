@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       include: {
         blocks: {
           orderBy: {
-            display_order: 'asc'
+            displayOrder: 'asc'
           }
         }
       }
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     const blockTemplates = await prisma.blockTemplate.findMany({
       orderBy: {
-        display_order: 'asc'
+        displayOrder: 'asc'
       }
     });
 
