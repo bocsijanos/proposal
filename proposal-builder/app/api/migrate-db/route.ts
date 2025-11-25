@@ -210,29 +210,8 @@ export async function POST(request: NextRequest) {
 
     console.log('Schema check:', { tablesExist, typesExist });
 
-    if (tablesExist && typesExist) {
-      console.log('Schema already fully exists (both tables and types found), skipping migration...');
-
-      // Try to add bonus block types (will silently fail if they exist)
-      try {
-        await prisma.$executeRaw`ALTER TYPE "BlockType" ADD VALUE IF NOT EXISTS 'BONUS_FEATURES'`;
-      } catch (e) {
-        console.log('BONUS_FEATURES already exists or error:', e);
-      }
-
-      try {
-        await prisma.$executeRaw`ALTER TYPE "BlockType" ADD VALUE IF NOT EXISTS 'PARTNER_GRID'`;
-      } catch (e) {
-        console.log('PARTNER_GRID already exists or error:', e);
-      }
-
-      return NextResponse.json({
-        message: 'Database schema already exists',
-        success: true,
-        alreadyExisted: true,
-        statementsExecuted: 0
-      });
-    }
+    // Always run migration, but skip "already exists" errors
+    // This ensures we create missing tables/enums even if some already exist
 
     // Split migration into individual statements and execute them
     console.log('Creating initial schema...');
