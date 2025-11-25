@@ -206,24 +206,51 @@ export async function POST(request: NextRequest) {
     `;
 
     if (tableCheck[0]?.exists) {
-      // Tables exist, just run the bonus block types migration
-      console.log('Tables already exist, applying bonus block types migration...');
-      await prisma.$executeRawUnsafe(BONUS_BLOCK_TYPES_MIGRATION);
+      console.log('Tables already exist, adding bonus block types if needed...');
+
+      // Try to add bonus block types (will silently fail if they exist)
+      try {
+        await prisma.$executeRaw`ALTER TYPE "BlockType" ADD VALUE IF NOT EXISTS 'BONUS_FEATURES'`;
+      } catch (e) {
+        console.log('BONUS_FEATURES already exists or error:', e);
+      }
+
+      try {
+        await prisma.$executeRaw`ALTER TYPE "BlockType" ADD VALUE IF NOT EXISTS 'PARTNER_GRID'`;
+      } catch (e) {
+        console.log('PARTNER_GRID already exists or error:', e);
+      }
 
       return NextResponse.json({
-        message: 'Database schema already exists, bonus block types added',
+        message: 'Database schema already exists',
         success: true,
         alreadyExisted: true
       });
     }
 
-    // Run init migration
+    // Split migration into individual statements and execute them
     console.log('Creating initial schema...');
-    await prisma.$executeRawUnsafe(INIT_MIGRATION);
 
-    // Run bonus block types migration
+    // Execute the full migration as one transaction using $executeRawUnsafe
+    // Note: We need to use $transaction to execute multiple statements
+    await prisma.$transaction(async (tx) => {
+      // Split the INIT_MIGRATION into individual statements
+      const statements = INIT_MIGRATION
+        .split(';')
+        .map(s => s.trim())
+        .filter(s => s.length > 0 && !s.startsWith('--'));
+
+      for (const statement of statements) {
+        if (statement) {
+          await tx.$executeRawUnsafe(statement + ';');
+        }
+      }
+    });
+
+    // Add bonus block types
     console.log('Adding bonus block types...');
-    await prisma.$executeRawUnsafe(BONUS_BLOCK_TYPES_MIGRATION);
+    await prisma.$executeRaw`ALTER TYPE "BlockType" ADD VALUE IF NOT EXISTS 'BONUS_FEATURES'`;
+    await prisma.$executeRaw`ALTER TYPE "BlockType" ADD VALUE IF NOT EXISTS 'PARTNER_GRID'`;
 
     return NextResponse.json({
       message: 'Database migrations applied successfully',
