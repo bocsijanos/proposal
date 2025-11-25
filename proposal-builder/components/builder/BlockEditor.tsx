@@ -171,35 +171,14 @@ export function BlockEditor({ block, onSave, onCancel, allowBrandChange = false 
         </p>
       </div>
 
-      {/* Two-column layout: Editor + Live Preview */}
-      <div className="grid grid-cols-2 gap-4 p-6">
-        {/* Left: JSON Editor */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-[var(--color-text)]">
-              JSON Szerkesztő
-            </label>
-            {parseError && (
-              <span className="text-xs text-red-600 font-medium">
-                ⚠️ Hibás JSON szintaxis
-              </span>
-            )}
-          </div>
-          <textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full h-[500px] font-mono text-sm p-4 rounded border border-gray-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] bg-white"
-            placeholder="{ ... }"
-          />
-        </div>
-
-        {/* Right: Live Preview */}
+      {/* Vertical layout: Live Preview (top) + JSON Editor (bottom) */}
+      <div className="space-y-4 p-6">
+        {/* Top: Live Preview */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-[var(--color-text)]">
             Élő Előnézet
           </label>
-          <div className="border border-gray-300 rounded bg-white overflow-auto h-[500px]">
+          <div className="border border-gray-300 rounded bg-white overflow-auto max-h-[600px]">
             {!parseError ? (
               <BlockRenderer
                 block={{
@@ -218,11 +197,32 @@ export function BlockEditor({ block, onSave, onCancel, allowBrandChange = false 
             ) : (
               <div className="p-4 text-center">
                 <div className="text-red-500 text-sm">
-                  ⚠️ A JSON szintaxis hibás. Javítsd a bal oldali szerkesztőben.
+                  ⚠️ A JSON szintaxis hibás. Javítsd a lenti szerkesztőben.
                 </div>
               </div>
             )}
           </div>
+        </div>
+
+        {/* Bottom: JSON Editor (compact) */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-[var(--color-text)]">
+              JSON Szerkesztő
+            </label>
+            {parseError && (
+              <span className="text-xs text-red-600 font-medium">
+                ⚠️ Hibás JSON szintaxis
+              </span>
+            )}
+          </div>
+          <textarea
+            ref={textareaRef}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="w-full h-32 font-mono text-xs p-3 rounded border border-gray-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] bg-white resize-y"
+            placeholder="{ ... }"
+          />
         </div>
       </div>
 
