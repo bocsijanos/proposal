@@ -18,13 +18,13 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         email: true,
-        password_hash: true,
+        passwordHash: true,
         name: true,
         role: true,
-        is_active: true,
-        last_login_at: true,
-        created_at: true,
-        updated_at: true,
+        isActive: true,
+        lastLoginAt: true,
+        createdAt: true,
+        updatedAt: true,
       }
     });
 
