@@ -171,6 +171,21 @@ ${brandName}`;
     setSyncLog(['🚀 Starting production sync...', '']);
 
     try {
+      // Step 0: Reset database (drop all tables)
+      addSyncLog('🗑️  Step 0: Resetting database (dropping old tables)...');
+      const resetResponse = await fetch('/api/reset-db', {
+        method: 'POST',
+      });
+
+      if (!resetResponse.ok) {
+        const error = await resetResponse.text();
+        throw new Error(`Reset failed: ${error}`);
+      }
+
+      const resetResult = await resetResponse.json();
+      addSyncLog(`✅ Reset completed: Dropped ${resetResult.tablesDropped} tables, ${resetResult.enumsDropped} enums`);
+      addSyncLog('');
+
       // Step 1: Run migration
       addSyncLog('📊 Step 1: Running database migration...');
       const migrateResponse = await fetch('/api/migrate-db', {
@@ -434,7 +449,9 @@ ${brandName}`;
 
             <div className="p-6 flex-1 overflow-auto">
               <p className="text-gray-600 mb-4">
-                Szinkronizálja az adatbázis sémát és töltse be a BOOM Marketing sablonokat.
+                <strong>⚠️ FIGYELEM:</strong> Ez törli az összes táblát és újra létrehozza a sémát!
+                <br />
+                Ezután betölti a BOOM Marketing sablonokat.
               </p>
 
               <button
