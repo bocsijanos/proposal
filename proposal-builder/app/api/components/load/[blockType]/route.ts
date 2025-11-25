@@ -55,37 +55,49 @@ export async function GET(
 
     let sourceCode: string;
 
-    // Load from ProposalComponentCode (required)
-    if (!customComponentId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'customComponentId is required - all components must be loaded from database',
-          blockType,
-        },
-        { status: 400 }
-      );
+    // Load from ProposalComponentCode if customComponentId provided
+    if (customComponentId) {
+      console.log(`[API] Loading from ProposalComponentCode: ${customComponentId}`);
+
+      const proposalComponent = await prisma.proposalComponentCode.findUnique({
+        where: { id: customComponentId },
+      });
+
+      if (!proposalComponent) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `ProposalComponentCode not found: ${customComponentId}`,
+            blockType,
+          },
+          { status: 404 }
+        );
+      }
+
+      // Use compiled code if available, otherwise use source code
+      sourceCode = proposalComponent.compiledCode || proposalComponent.sourceCode;
+    } else {
+      // Fallback to ComponentSource for backward compatibility (old proposals)
+      console.log(`[API] Loading from ComponentSource (fallback): ${blockType}`);
+
+      const componentSource = await prisma.componentSource.findUnique({
+        where: { blockType: blockType as any },
+      });
+
+      if (!componentSource) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Component not found for block type: ${blockType}`,
+            blockType,
+          },
+          { status: 404 }
+        );
+      }
+
+      // Use compiled code if available, otherwise use source code
+      sourceCode = componentSource.compiledCode || componentSource.sourceCode;
     }
-
-    console.log(`[API] Loading from ProposalComponentCode: ${customComponentId}`);
-
-    const proposalComponent = await prisma.proposalComponentCode.findUnique({
-      where: { id: customComponentId },
-    });
-
-    if (!proposalComponent) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `ProposalComponentCode not found: ${customComponentId}`,
-          blockType,
-        },
-        { status: 404 }
-      );
-    }
-
-    // Use compiled code if available, otherwise use source code
-    sourceCode = proposalComponent.compiledCode || proposalComponent.sourceCode;
 
     // Cache the result
     componentCodeCache.set(cacheKey, {
