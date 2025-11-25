@@ -186,7 +186,7 @@ ALTER TYPE "BlockType" ADD VALUE IF NOT EXISTS 'PARTNER_GRID';
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Starting database schema creation (no auth)...');
+    console.log('Starting database schema creation (no auth, AND logic)...');
 
     // Check if schema already exists (check for both tables and types)
     const schemaCheck = await prisma.$queryRaw<Array<{
