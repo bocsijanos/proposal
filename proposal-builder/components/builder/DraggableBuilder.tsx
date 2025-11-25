@@ -29,6 +29,13 @@ interface Block {
 interface DraggableBuilderProps {
   blocks: Block[];
   brand: 'BOOM' | 'AIBOOST';
+  proposalData?: {
+    clientName: string;
+    clientContactName?: string | null;
+    clientPhone?: string | null;
+    clientEmail?: string | null;
+    createdByName?: string | null;
+  };
   onReorder: (blocks: Block[]) => void;
   onEdit?: (blockId: string, newContent: any) => void;
   onToggle?: (blockId: string) => void;
@@ -39,6 +46,7 @@ interface DraggableBuilderProps {
 export function DraggableBuilder({
   blocks,
   brand,
+  proposalData,
   onReorder,
   onEdit,
   onToggle,
@@ -107,6 +115,7 @@ export function DraggableBuilder({
               key={block.id}
               block={block}
               brand={brand}
+              proposalData={proposalData}
               onEdit={onEdit}
               onToggle={onToggle}
               onDelete={onDelete}

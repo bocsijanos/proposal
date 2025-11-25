@@ -397,6 +397,13 @@ export default function EditProposalPage() {
         <DraggableBuilder
           blocks={proposal.blocks.sort((a, b) => a.displayOrder - b.displayOrder)}
           brand={proposal.brand}
+          proposalData={{
+            clientName: proposal.clientName,
+            clientContactName: proposal.clientContactName,
+            clientPhone: proposal.clientPhone,
+            clientEmail: proposal.clientEmail,
+            createdByName: null,
+          }}
           onReorder={handleBlocksReorder}
           onEdit={handleBlockEdit}
           onToggle={handleBlockToggle}

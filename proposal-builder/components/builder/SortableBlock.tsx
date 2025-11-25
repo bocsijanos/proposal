@@ -18,6 +18,13 @@ interface Block {
 interface SortableBlockProps {
   block: Block;
   brand: 'BOOM' | 'AIBOOST';
+  proposalData?: {
+    clientName: string;
+    clientContactName?: string | null;
+    clientPhone?: string | null;
+    clientEmail?: string | null;
+    createdByName?: string | null;
+  };
   onEdit?: (blockId: string, newContent: any) => void;
   onToggle?: (blockId: string) => void;
   onDelete?: (blockId: string) => void;
@@ -27,6 +34,7 @@ interface SortableBlockProps {
 export function SortableBlock({
   block,
   brand,
+  proposalData,
   onEdit,
   onToggle,
   onDelete,
@@ -148,7 +156,7 @@ export function SortableBlock({
         </div>
 
         {/* Render the actual block */}
-        <BlockRenderer block={block} brand={brand} />
+        <BlockRenderer block={block} brand={brand} proposalData={proposalData} />
 
         {/* Inline Editor */}
         {isEditing && (
