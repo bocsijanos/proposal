@@ -77,3 +77,31 @@ export async function GET(
     );
   }
 }
+
+// DELETE /api/block-templates/[id] - Delete a specific template
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    await prisma.blockTemplate.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true, message: 'Template deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting template:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete template' },
+      { status: 500 }
+    );
+  }
+}

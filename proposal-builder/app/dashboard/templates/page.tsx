@@ -42,6 +42,7 @@ interface SortableTemplateItemProps {
   onToggleActive: (id: string, currentState: boolean) => void;
   onSave: (id: string, newContent: any, newBrand?: 'BOOM' | 'AIBOOST') => void;
   onCancel: () => void;
+  onDelete: (id: string) => void;
 }
 
 function SortableTemplateItem({
@@ -52,6 +53,7 @@ function SortableTemplateItem({
   onToggleActive,
   onSave,
   onCancel,
+  onDelete,
 }: SortableTemplateItemProps) {
   const {
     attributes,
@@ -74,8 +76,8 @@ function SortableTemplateItem({
       style={style}
       className="relative group"
     >
-      {/* Drag Handle */}
-      <div className="absolute -left-12 top-6 opacity-0 group-hover:opacity-100 transition-opacity">
+      {/* Drag Handle and Delete Button */}
+      <div className="absolute -left-12 top-6 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
         <button
           {...attributes}
           {...listeners}
@@ -83,6 +85,17 @@ function SortableTemplateItem({
           title="Húzd ide a sablon átrendezéséhez"
         >
           <span className="text-[var(--color-muted)]">⋮⋮</span>
+        </button>
+        <button
+          onClick={() => {
+            if (confirm('Biztosan törölni szeretnéd ezt a sablont?')) {
+              onDelete(template.id);
+            }
+          }}
+          className="w-8 h-8 rounded bg-white border border-[var(--color-border)] hover:border-red-500 hover:bg-red-50 flex items-center justify-center"
+          title="Sablon törlése"
+        >
+          <span className="text-red-500">🗑️</span>
         </button>
       </div>
 
@@ -257,6 +270,22 @@ export default function TemplatesPage() {
     }
   };
 
+  const handleDelete = async (templateId: string) => {
+    try {
+      const response = await fetch(`/api/block-templates/${templateId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        await fetchTemplates();
+      } else {
+        console.error('Failed to delete template');
+      }
+    } catch (error) {
+      console.error('Error deleting template:', error);
+    }
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -407,6 +436,7 @@ export default function TemplatesPage() {
                   onToggleActive={handleToggleActive}
                   onSave={handleSave}
                   onCancel={handleCancel}
+                  onDelete={handleDelete}
                 />
               ))}
             </div>
