@@ -1,5 +1,6 @@
 'use client';
 
+// Dashboard with DB Health Check v2.1.0
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
