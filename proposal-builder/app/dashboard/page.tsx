@@ -30,6 +30,9 @@ export default function DashboardPage() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showSyncModal, setShowSyncModal] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncLog, setSyncLog] = useState<string[]>([]);
 
   useEffect(() => {
     fetchProposals();
@@ -136,6 +139,59 @@ ${brandName}`;
     );
   };
 
+  const addSyncLog = (message: string) => {
+    setSyncLog(prev => [...prev, message]);
+  };
+
+  const runSync = async () => {
+    setSyncing(true);
+    setSyncLog(['🚀 Starting production sync...', '']);
+
+    try {
+      // Step 1: Run migration
+      addSyncLog('📊 Step 1: Running database migration...');
+      const migrateResponse = await fetch('/api/migrate-db', {
+        method: 'POST',
+      });
+
+      if (!migrateResponse.ok) {
+        const error = await migrateResponse.text();
+        throw new Error(`Migration failed: ${error}`);
+      }
+
+      const migrateResult = await migrateResponse.json();
+      addSyncLog(`✅ Migration completed: ${migrateResult.message}`);
+      addSyncLog(`   Executed ${migrateResult.statementsExecuted} SQL statements`);
+      addSyncLog('');
+
+      // Step 2: Run seed templates
+      addSyncLog('🌱 Step 2: Seeding BOOM Marketing templates...');
+      const seedResponse = await fetch('/api/seed-templates', {
+        method: 'POST',
+      });
+
+      if (!seedResponse.ok) {
+        const error = await seedResponse.text();
+        throw new Error(`Seed failed: ${error}`);
+      }
+
+      const seedResult = await seedResponse.json();
+      addSyncLog(`✅ Seed completed: ${seedResult.message}`);
+      addSyncLog(`   Created ${seedResult.created} new templates`);
+      addSyncLog(`   Skipped ${seedResult.skipped} existing templates`);
+      addSyncLog('');
+
+      addSyncLog('🎉 Production sync completed successfully!');
+      addSyncLog('');
+      addSyncLog('🌐 Refresh the templates page to see them');
+
+    } catch (error) {
+      addSyncLog(`❌ Error: ${(error as Error).message}`);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -160,6 +216,14 @@ ${brandName}`;
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setShowSyncModal(true)}
+              className="bg-purple-50 hover:bg-purple-100 border-purple-200"
+            >
+              🔄 Sync Production
+            </Button>
             <Button
               variant="outline"
               size="lg"
@@ -319,6 +383,49 @@ ${brandName}`;
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Sync Modal */}
+      {showSyncModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h2 className="text-2xl font-bold">Production Sync</h2>
+              <button
+                onClick={() => setShowSyncModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="p-6 flex-1 overflow-auto">
+              <p className="text-gray-600 mb-4">
+                Szinkronizálja az adatbázis sémát és töltse be a BOOM Marketing sablonokat.
+              </p>
+
+              <button
+                onClick={runSync}
+                disabled={syncing}
+                className={`w-full px-6 py-3 rounded-lg font-semibold mb-4 ${
+                  syncing
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
+              >
+                {syncing ? 'Syncing...' : 'Run Sync'}
+              </button>
+
+              {syncLog.length > 0 && (
+                <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
+                  {syncLog.map((line, i) => (
+                    <div key={i}>{line || '\u00A0'}</div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
