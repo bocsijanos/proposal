@@ -210,8 +210,8 @@ export async function POST(request: NextRequest) {
 
     console.log('Schema check:', { tablesExist, typesExist });
 
-    if (tablesExist || typesExist) {
-      console.log('Schema already exists (tables or types found), skipping migration...');
+    if (tablesExist && typesExist) {
+      console.log('Schema already fully exists (both tables and types found), skipping migration...');
 
       // Try to add bonus block types (will silently fail if they exist)
       try {
