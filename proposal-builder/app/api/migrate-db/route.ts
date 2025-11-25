@@ -190,17 +190,28 @@ export async function POST(request: NextRequest) {
   try {
     console.log('Starting database schema creation...');
 
-    // Check if tables already exist
-    const tableCheck = await prisma.$queryRaw<Array<{ exists: boolean }>>`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables
-        WHERE table_schema = 'public'
-        AND table_name = 'block_templates'
-      );
+    // Check if schema already exists (check for both tables and types)
+    const schemaCheck = await prisma.$queryRaw<Array<{
+      tables_exist: boolean;
+      types_exist: boolean;
+    }>>`
+      SELECT
+        EXISTS (
+          SELECT FROM information_schema.tables
+          WHERE table_schema = 'public'
+          AND table_name = 'block_templates'
+        ) as tables_exist,
+        EXISTS (
+          SELECT FROM pg_type
+          WHERE typname = 'UserRole'
+        ) as types_exist;
     `;
 
-    if (tableCheck[0]?.exists) {
-      console.log('Tables already exist, adding bonus block types if needed...');
+    const tablesExist = schemaCheck[0]?.tables_exist;
+    const typesExist = schemaCheck[0]?.types_exist;
+
+    if (tablesExist && typesExist) {
+      console.log('Schema already exists, adding bonus block types if needed...');
 
       // Try to add bonus block types (will silently fail if they exist)
       try {
