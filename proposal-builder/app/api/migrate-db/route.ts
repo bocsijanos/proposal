@@ -207,11 +207,13 @@ export async function POST(request: NextRequest) {
         ) as types_exist;
     `;
 
-    const tablesExist = schemaCheck[0]?.tables_exist;
-    const typesExist = schemaCheck[0]?.types_exist;
+    const tablesExist = Boolean(schemaCheck[0]?.tables_exist);
+    const typesExist = Boolean(schemaCheck[0]?.types_exist);
 
-    if (tablesExist && typesExist) {
-      console.log('Schema already exists, adding bonus block types if needed...');
+    console.log('Schema check:', { tablesExist, typesExist });
+
+    if (tablesExist || typesExist) {
+      console.log('Schema already exists (tables or types found), skipping migration...');
 
       // Try to add bonus block types (will silently fail if they exist)
       try {
