@@ -1,6 +1,5 @@
 'use client';
 
-// Dashboard with DB Health Check v2.1.0
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
@@ -31,12 +30,6 @@ export default function DashboardPage() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showSyncModal, setShowSyncModal] = useState(false);
-  const [syncing, setSyncing] = useState(false);
-  const [syncLog, setSyncLog] = useState<string[]>([]);
-  const [showHealthModal, setShowHealthModal] = useState(false);
-  const [healthChecking, setHealthChecking] = useState(false);
-  const [healthResult, setHealthResult] = useState<any>(null);
 
   useEffect(() => {
     fetchProposals();
@@ -143,46 +136,6 @@ ${brandName}`;
     );
   };
 
-  const addSyncLog = (message: string) => {
-    setSyncLog(prev => [...prev, message]);
-  };
-
-  const checkHealth = async () => {
-    setHealthChecking(true);
-    setHealthResult(null);
-
-    try {
-      const response = await fetch('/api/db-health');
-      const data = await response.json();
-      setHealthResult(data);
-    } catch (error) {
-      setHealthResult({
-        success: false,
-        error: 'Failed to check database health',
-        details: (error as Error).message
-      });
-    } finally {
-      setHealthChecking(false);
-    }
-  };
-
-  const showSyncInstructions = () => {
-    setSyncLog([
-      '📋 Data Sync Instructions',
-      '',
-      'To sync data from development to production, run this command in your terminal:',
-      '',
-      '  cd proposal-builder',
-      '  DATABASE_URL="postgres://your-dev-db" node scripts/sync-to-production-auto.mjs',
-      '',
-      'This will import:',
-      '  ✅ Users (skips existing)',
-      '  ✅ Block Templates (skips existing)',
-      '  ✅ Proposals and Blocks (skips existing)',
-      '',
-      'Note: The script will NOT delete any existing data.',
-    ]);
-  };
 
   if (loading) {
     return (
@@ -208,22 +161,6 @@ ${brandName}`;
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => setShowHealthModal(true)}
-              className="bg-blue-50 hover:bg-blue-100 border-blue-200"
-            >
-              🏥 DB Health
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={() => setShowSyncModal(true)}
-              className="bg-purple-50 hover:bg-purple-100 border-purple-200"
-            >
-              🔄 Sync Production
-            </Button>
             <Button
               variant="outline"
               size="lg"
@@ -387,148 +324,6 @@ ${brandName}`;
         </div>
       )}
 
-      {/* Sync Modal */}
-      {showSyncModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-2xl font-bold">Production Sync</h2>
-              <button
-                onClick={() => setShowSyncModal(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="p-6 flex-1 overflow-auto">
-              <p className="text-gray-600 mb-4">
-                Importálja a fejlesztői környezetből a hiányzó adatokat (felhasználók, sablonok, árajánlatok).
-                <br />
-                <strong>A meglévő adatok nem lesznek felülírva.</strong>
-              </p>
-
-              <button
-                onClick={() => { setShowSyncModal(true); showSyncInstructions(); }}
-                className="w-full px-6 py-3 rounded-lg font-semibold mb-4 bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Show Sync Instructions
-              </button>
-
-              {syncLog.length > 0 && (
-                <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
-                  {syncLog.map((line, i) => (
-                    <div key={i}>{line || '\u00A0'}</div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Database Health Check Modal */}
-      {showHealthModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h2 className="text-2xl font-bold">Database Health Check</h2>
-              <button
-                onClick={() => setShowHealthModal(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="p-6 flex-1 overflow-auto">
-              <p className="text-gray-600 mb-4">
-                Ellenőrizze az adatbázis kapcsolat állapotát és a létező táblákat.
-              </p>
-
-              <button
-                onClick={checkHealth}
-                disabled={healthChecking}
-                className={`w-full px-6 py-3 rounded-lg font-semibold mb-4 ${
-                  healthChecking
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                }`}
-              >
-                {healthChecking ? 'Checking...' : 'Check Database Health'}
-              </button>
-
-              {healthResult && (
-                <div className={`p-4 rounded-lg ${
-                  healthResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
-                }`}>
-                  {healthResult.success ? (
-                    <div>
-                      <h3 className="font-bold text-green-800 mb-3">✅ Database is healthy</h3>
-                      <div className="space-y-2 text-sm">
-                        <div className="grid grid-cols-2 gap-2">
-                          <span className="font-semibold text-gray-700">Connection Time:</span>
-                          <span className="text-gray-600">{healthResult.details.connectTime}</span>
-
-                          <span className="font-semibold text-gray-700">Query Time:</span>
-                          <span className="text-gray-600">{healthResult.details.queryTime}</span>
-
-                          <span className="font-semibold text-gray-700">Server Time:</span>
-                          <span className="text-gray-600">{new Date(healthResult.details.serverTime).toLocaleString()}</span>
-                        </div>
-
-                        <div className="mt-4">
-                          <h4 className="font-semibold text-gray-700 mb-2">
-                            Enum Types ({healthResult.details.enumTypesCount}):
-                          </h4>
-                          <div className="flex flex-wrap gap-2">
-                            {healthResult.details.enumTypes?.map((type: string) => (
-                              <span key={type} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                                {type}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="mt-4">
-                          <h4 className="font-semibold text-gray-700 mb-2">
-                            Tables ({healthResult.details.tablesCount}):
-                          </h4>
-                          {healthResult.details.tablesCount > 0 ? (
-                            <div className="flex flex-wrap gap-2">
-                              {healthResult.details.tables?.map((table: string) => (
-                                <span key={table} className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
-                                  {table}
-                                </span>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded">
-                              <p className="text-yellow-800 text-sm">
-                                ⚠️ No tables found. Database schema needs to be created.
-                                <br />
-                                <strong>Action required:</strong> Run the "Sync Production" to create tables.
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <h3 className="font-bold text-red-800 mb-2">❌ Database health check failed</h3>
-                      <p className="text-red-700 text-sm mb-2">{healthResult.error}</p>
-                      <pre className="bg-red-100 p-2 rounded text-xs overflow-auto">
-                        {healthResult.details}
-                      </pre>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
