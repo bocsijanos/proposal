@@ -166,68 +166,22 @@ ${brandName}`;
     }
   };
 
-  const runSync = async () => {
-    setSyncing(true);
-    setSyncLog(['🚀 Starting production sync...', '']);
-
-    try {
-      // Step 0: Reset database (drop all tables)
-      addSyncLog('🗑️  Step 0: Resetting database (dropping old tables)...');
-      const resetResponse = await fetch('/api/reset-db', {
-        method: 'POST',
-      });
-
-      if (!resetResponse.ok) {
-        const error = await resetResponse.text();
-        throw new Error(`Reset failed: ${error}`);
-      }
-
-      const resetResult = await resetResponse.json();
-      addSyncLog(`✅ Reset completed: Dropped ${resetResult.tablesDropped} tables, ${resetResult.enumsDropped} enums`);
-      addSyncLog('');
-
-      // Step 1: Run migration
-      addSyncLog('📊 Step 1: Running database migration...');
-      const migrateResponse = await fetch('/api/migrate-db', {
-        method: 'POST',
-      });
-
-      if (!migrateResponse.ok) {
-        const error = await migrateResponse.text();
-        throw new Error(`Migration failed: ${error}`);
-      }
-
-      const migrateResult = await migrateResponse.json();
-      addSyncLog(`✅ Migration completed: ${migrateResult.message}`);
-      addSyncLog(`   Executed ${migrateResult.statementsExecuted} SQL statements`);
-      addSyncLog('');
-
-      // Step 2: Run seed templates
-      addSyncLog('🌱 Step 2: Seeding BOOM Marketing templates...');
-      const seedResponse = await fetch('/api/seed-templates', {
-        method: 'POST',
-      });
-
-      if (!seedResponse.ok) {
-        const error = await seedResponse.text();
-        throw new Error(`Seed failed: ${error}`);
-      }
-
-      const seedResult = await seedResponse.json();
-      addSyncLog(`✅ Seed completed: ${seedResult.message}`);
-      addSyncLog(`   Created ${seedResult.created} new templates`);
-      addSyncLog(`   Skipped ${seedResult.skipped} existing templates`);
-      addSyncLog('');
-
-      addSyncLog('🎉 Production sync completed successfully!');
-      addSyncLog('');
-      addSyncLog('🌐 Refresh the templates page to see them');
-
-    } catch (error) {
-      addSyncLog(`❌ Error: ${(error as Error).message}`);
-    } finally {
-      setSyncing(false);
-    }
+  const showSyncInstructions = () => {
+    setSyncLog([
+      '📋 Data Sync Instructions',
+      '',
+      'To sync data from development to production, run this command in your terminal:',
+      '',
+      '  cd proposal-builder',
+      '  DATABASE_URL="postgres://your-dev-db" node scripts/sync-to-production-auto.mjs',
+      '',
+      'This will import:',
+      '  ✅ Users (skips existing)',
+      '  ✅ Block Templates (skips existing)',
+      '  ✅ Proposals and Blocks (skips existing)',
+      '',
+      'Note: The script will NOT delete any existing data.',
+    ]);
   };
 
   if (loading) {
@@ -449,21 +403,16 @@ ${brandName}`;
 
             <div className="p-6 flex-1 overflow-auto">
               <p className="text-gray-600 mb-4">
-                <strong>⚠️ FIGYELEM:</strong> Ez törli az összes táblát és újra létrehozza a sémát!
+                Importálja a fejlesztői környezetből a hiányzó adatokat (felhasználók, sablonok, árajánlatok).
                 <br />
-                Ezután betölti a BOOM Marketing sablonokat.
+                <strong>A meglévő adatok nem lesznek felülírva.</strong>
               </p>
 
               <button
-                onClick={runSync}
-                disabled={syncing}
-                className={`w-full px-6 py-3 rounded-lg font-semibold mb-4 ${
-                  syncing
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-green-600 hover:bg-green-700 text-white'
-                }`}
+                onClick={() => { setShowSyncModal(true); showSyncInstructions(); }}
+                className="w-full px-6 py-3 rounded-lg font-semibold mb-4 bg-blue-600 hover:bg-blue-700 text-white"
               >
-                {syncing ? 'Syncing...' : 'Run Sync'}
+                Show Sync Instructions
               </button>
 
               {syncLog.length > 0 && (
