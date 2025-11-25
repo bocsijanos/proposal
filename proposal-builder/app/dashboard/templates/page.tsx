@@ -103,7 +103,7 @@ function SortableTemplateItem({
       style={style}
       className="relative group transition-all"
     >
-      {/* Drag Handle, Move to End, and Delete Button */}
+      {/* Sidebar Actions: Drag Handle, Edit, Move to End, and Delete */}
       <div className="absolute -left-12 top-6 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
         <button
           {...attributes}
@@ -112,6 +112,19 @@ function SortableTemplateItem({
           title="Húzd ide a sablon átrendezéséhez"
         >
           <span className="text-[var(--color-muted)]">⋮⋮</span>
+        </button>
+        <button
+          onClick={() => onEdit(template.id)}
+          className={`w-8 h-8 rounded border flex items-center justify-center ${
+            editingId === template.id
+              ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white'
+              : 'bg-white border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-blue-50'
+          }`}
+          title="Tartalom szerkesztése"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+          </svg>
         </button>
         <button
           onClick={() => onMoveToEnd(template.id)}
@@ -214,15 +227,6 @@ function SortableTemplateItem({
               >
                 {template.isActive ? 'Aktív' : 'Inaktív'}
               </button>
-
-              {/* Edit button */}
-              <Button
-                onClick={() => onEdit(template.id)}
-                variant={editingId === template.id ? 'default' : 'outline'}
-                size="sm"
-              >
-                {editingId === template.id ? '✏️ Szerkesztés...' : '✏️ Szerkesztés'}
-              </Button>
             </div>
           )}
         </div>
