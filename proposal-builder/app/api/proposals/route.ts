@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
           blockType: source.blockType,
           sourceCode: source.sourceCode,
           compiledCode: source.compiledCode,
-          schema: source.schema,
+          schema: source.schema as any, // JsonValue from DB is compatible with InputJsonValue
           sourceVersion: source.version,
           isCustomized: false,
         },

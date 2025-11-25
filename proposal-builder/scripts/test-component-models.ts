@@ -55,7 +55,7 @@ async function testComponentModels() {
         changeDescription: 'Initial version of Hero component',
         sourceCode: componentSource.sourceCode,
         compiledCode: componentSource.compiledCode,
-        schema: componentSource.schema,
+        schema: componentSource.schema as any,
         createdById: 'system' // In production, this would be a real user ID
       }
     });
@@ -88,7 +88,7 @@ async function testComponentModels() {
             changeDescription: 'Added responsive design improvements',
             sourceCode: '/* Updated source code */',
             compiledCode: '/* Updated compiled code */',
-            schema: componentSource.schema,
+            schema: componentSource.schema as any,
             createdById: 'system'
           }
         }
