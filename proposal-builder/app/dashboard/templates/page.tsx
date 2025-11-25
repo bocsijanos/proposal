@@ -32,6 +32,7 @@ interface BlockTemplate {
   isActive: boolean;
   displayOrder: number;
   brand: 'BOOM' | 'AIBOOST';
+  hasComponentSource?: boolean;
 }
 
 interface EditingTemplate {
@@ -193,6 +194,16 @@ function SortableTemplateItem({
                   <h3 className="text-lg font-semibold text-[var(--color-text)]">
                     {template.name}
                   </h3>
+                  {template.hasComponentSource && (
+                    <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800 border border-green-300">
+                      ✓ Új rendszer
+                    </span>
+                  )}
+                  {!template.hasComponentSource && (
+                    <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 border border-yellow-300">
+                      ⚠ Régi
+                    </span>
+                  )}
                   <button
                     onClick={() => onEditMetadata(template.id)}
                     className="text-[var(--color-muted)] hover:text-[var(--color-primary)] transition-colors"

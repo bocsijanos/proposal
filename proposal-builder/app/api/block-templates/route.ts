@@ -24,7 +24,20 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    return NextResponse.json(templates);
+    // Check which block types have ComponentSource (new system)
+    const componentSources = await prisma.componentSource.findMany({
+      select: { blockType: true },
+    });
+
+    const hasComponentSource = new Set(componentSources.map(cs => cs.blockType));
+
+    // Add hasComponentSource flag to each template
+    const enrichedTemplates = templates.map(template => ({
+      ...template,
+      hasComponentSource: hasComponentSource.has(template.blockType),
+    }));
+
+    return NextResponse.json(enrichedTemplates);
   } catch (error) {
     console.error('Error fetching block templates:', error);
     return NextResponse.json(
