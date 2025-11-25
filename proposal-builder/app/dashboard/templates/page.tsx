@@ -155,7 +155,11 @@ function SortableTemplateItem({
                   isEnabled: template.isActive,
                   content: template.defaultContent,
                 } as any}
-                brand="BOOM"
+                brand={template.brand}
+                proposalData={{
+                  clientName: '{{clientName}}',
+                  createdByName: '{{createdByName}}',
+                }}
               />
             </div>
           </div>
