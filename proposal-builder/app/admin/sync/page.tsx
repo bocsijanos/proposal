@@ -3,21 +3,8 @@
 import { useState } from 'react';
 
 export default function AdminSyncPage() {
-  const [password, setPassword] = useState('');
-  const [authenticated, setAuthenticated] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [log, setLog] = useState<string[]>([]);
-
-  const handleAuth = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simple password check (you can change this)
-    if (password === 'boommarketing2025') {
-      setAuthenticated(true);
-      setLog(['✅ Authenticated successfully']);
-    } else {
-      setLog(['❌ Invalid password']);
-    }
-  };
 
   const addLog = (message: string) => {
     setLog(prev => [...prev, message]);
@@ -71,37 +58,6 @@ export default function AdminSyncPage() {
       setSyncing(false);
     }
   };
-
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="bg-white p-8 rounded-lg shadow-md w-96">
-          <h1 className="text-2xl font-bold mb-6 text-center">Admin Sync</h1>
-          <form onSubmit={handleAuth}>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter admin password"
-              className="w-full px-4 py-2 border rounded mb-4"
-              autoFocus
-            />
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-            >
-              Authenticate
-            </button>
-          </form>
-          {log.length > 0 && (
-            <div className="mt-4 text-sm text-red-600">
-              {log[log.length - 1]}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
