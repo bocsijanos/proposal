@@ -1,3 +1,5 @@
+import { getBrandColors } from '@/lib/brandColors';
+
 interface ClientLogosBlockProps {
   content: {
     heading: string;
@@ -15,6 +17,7 @@ interface ClientLogosBlockProps {
 
 export function ClientLogosBlock({ content, brand }: ClientLogosBlockProps) {
   const { heading, description, logos, columns = 4 } = content;
+  const colors = getBrandColors(brand);
 
   const gridCols = {
     2: 'grid-cols-2',
@@ -28,15 +31,19 @@ export function ClientLogosBlock({ content, brand }: ClientLogosBlockProps) {
     <div className="py-12 md:py-16 lg:py-20">
       <div className="text-center mb-12">
         <h2
-          className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--color-text)] leading-tight"
+          className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
           style={{
+            color: colors.headingPrimary,
             marginBottom: 'clamp(2rem, 3vw, 3rem)'
           }}
         >
           {heading}
         </h2>
         {description && (
-          <p className="text-lg text-[var(--color-muted)] max-w-2xl mx-auto">
+          <p
+            className="text-lg max-w-2xl mx-auto"
+            style={{ color: colors.textColor }}
+          >
             {description}
           </p>
         )}

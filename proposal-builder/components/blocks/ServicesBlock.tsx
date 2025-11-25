@@ -1,6 +1,7 @@
 import { ServiceCard, ServiceCardVariant } from '@/components/ui/service-card';
 import { ScrollReveal } from '@/components/ui/scroll-reveal';
 import { PlatformType } from '@/components/ui/platform-icons';
+import { getBrandColors } from '@/lib/brandColors';
 
 interface Service {
   id: string;
@@ -29,6 +30,7 @@ interface ServicesBlockProps {
 
 export function ServicesBlock({ content, brand }: ServicesBlockProps) {
   const { heading, subheading, services, columns = 3, layout = 'grid' } = content;
+  const colors = getBrandColors(brand);
 
   // Védelem - ha nincs services array, ne rendereljünk semmit
   if (!services || !Array.isArray(services) || services.length === 0) {
@@ -45,12 +47,18 @@ export function ServicesBlock({ content, brand }: ServicesBlockProps) {
     <section className="w-full py-12 md:py-16 lg:py-20">
       {/* Section Header */}
       <div className="text-center mb-12 md:mb-16 lg:mb-20">
-        <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--color-text)] leading-tight mb-6">
+        <h2
+          className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
+          style={{ color: colors.headingPrimary }}
+        >
           {heading}
         </h2>
         {subheading && (
           <div className="flex justify-center">
-            <p className="text-lg md:text-xl text-[var(--color-muted)] max-w-3xl leading-relaxed text-center">
+            <p
+              className="text-lg md:text-xl max-w-3xl leading-relaxed text-center"
+              style={{ color: colors.textColor }}
+            >
               {subheading}
             </p>
           </div>

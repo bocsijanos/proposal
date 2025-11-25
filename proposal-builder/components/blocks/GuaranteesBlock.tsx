@@ -1,3 +1,5 @@
+import { getBrandColors } from '@/lib/brandColors';
+
 interface GuaranteesBlockProps {
   content: {
     heading: string;
@@ -10,12 +12,14 @@ interface GuaranteesBlockProps {
 
 export function GuaranteesBlock({ content, brand }: GuaranteesBlockProps) {
   const { heading, leftColumn, rightColumn } = content;
+  const colors = getBrandColors(brand);
 
   return (
     <section className="w-full bg-gradient-to-br from-[var(--color-background-alt)] via-white to-[var(--color-background-alt)] rounded-3xl p-10 md:p-16 lg:p-20 shadow-xl">
       <h2
-        className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--color-text)] text-center leading-tight"
+        className="text-4xl md:text-5xl lg:text-6xl font-bold text-center leading-tight"
         style={{
+          color: colors.headingSecondary,
           marginBottom: 'clamp(3rem, 4vw, 4rem)'
         }}
       >
@@ -40,7 +44,7 @@ export function GuaranteesBlock({ content, brand }: GuaranteesBlockProps) {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
-              <span className="text-[var(--color-text)] text-lg leading-relaxed">{item}</span>
+              <span className="text-lg leading-relaxed" style={{ color: colors.textColor }}>{item}</span>
             </div>
           ))}
         </div>
@@ -67,7 +71,7 @@ export function GuaranteesBlock({ content, brand }: GuaranteesBlockProps) {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
-              <span className="text-[var(--color-text)] text-lg leading-relaxed">{item}</span>
+              <span className="text-lg leading-relaxed" style={{ color: colors.textColor }}>{item}</span>
             </div>
           ))}
         </div>

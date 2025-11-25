@@ -1,3 +1,5 @@
+import { getBrandColors } from '@/lib/brandColors';
+
 interface ProcessTimelineBlockProps {
   content: {
     heading: string;
@@ -15,20 +17,22 @@ interface ProcessTimelineBlockProps {
 
 export function ProcessTimelineBlock({ content, brand }: ProcessTimelineBlockProps) {
   const { heading, description, steps } = content;
+  const colors = getBrandColors(brand);
 
   return (
     <div className="py-12 md:py-16 lg:py-20">
       <div className="text-center mb-12">
         <h2
-          className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--color-text)] leading-tight"
+          className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
           style={{
+            color: colors.headingPrimary,
             marginBottom: 'clamp(2rem, 3vw, 3rem)'
           }}
         >
           {heading}
         </h2>
         {description && (
-          <p className="text-lg text-[var(--color-muted)] max-w-2xl mx-auto">
+          <p className="text-lg max-w-2xl mx-auto" style={{ color: colors.textColor }}>
             {description}
           </p>
         )}
@@ -56,11 +60,11 @@ export function ProcessTimelineBlock({ content, brand }: ProcessTimelineBlockPro
                     {step.icon && (
                       <span className="text-3xl">{step.icon}</span>
                     )}
-                    <h3 className="text-xl font-semibold text-[var(--color-text)]">
+                    <h3 className="text-xl font-semibold" style={{ color: colors.headingSecondary }}>
                       {step.title}
                     </h3>
                   </div>
-                  <p className="text-[var(--color-muted)]">
+                  <p style={{ color: colors.textColor }}>
                     {step.description}
                   </p>
                 </div>

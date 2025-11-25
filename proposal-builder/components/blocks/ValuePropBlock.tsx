@@ -1,3 +1,5 @@
+import { getBrandColors } from '@/lib/brandColors';
+
 interface ValuePropBlockProps {
   content: {
     heading: string;
@@ -16,12 +18,14 @@ interface ValuePropBlockProps {
 
 export function ValuePropBlock({ content, brand }: ValuePropBlockProps) {
   const { heading, leftColumn, rightColumn } = content;
+  const colors = getBrandColors(brand);
 
   return (
     <section className="w-full bg-white rounded-3xl p-10 md:p-16 lg:p-20 shadow-lg">
       <h2
-        className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--color-text)] text-center leading-tight"
+        className="text-4xl md:text-5xl lg:text-6xl font-bold text-center leading-tight"
         style={{
+          color: colors.headingPrimary,
           marginBottom: 'clamp(3rem, 4vw, 4rem)'
         }}
       >
@@ -35,8 +39,11 @@ export function ValuePropBlock({ content, brand }: ValuePropBlockProps) {
           style={{ padding: 'clamp(2rem, 2.5vw, 3rem)' }}
         >
           <h3
-            className="text-3xl md:text-4xl font-bold text-[var(--color-text)] leading-tight"
-            style={{ marginBottom: 'clamp(1.5rem, 2vw, 2rem)' }}
+            className="text-3xl md:text-4xl font-bold leading-tight"
+            style={{
+              color: colors.headingSecondary,
+              marginBottom: 'clamp(1.5rem, 2vw, 2rem)'
+            }}
           >
             {leftColumn.title}
           </h3>
@@ -52,7 +59,10 @@ export function ValuePropBlock({ content, brand }: ValuePropBlockProps) {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="text-[var(--color-text)] text-lg leading-relaxed">
+                <span
+                  className="text-lg leading-relaxed"
+                  style={{ color: colors.textColor }}
+                >
                   {item}
                 </span>
               </li>
@@ -66,12 +76,18 @@ export function ValuePropBlock({ content, brand }: ValuePropBlockProps) {
           style={{ padding: 'clamp(2rem, 2.5vw, 3rem)' }}
         >
           <h3
-            className="text-3xl md:text-4xl font-bold text-[var(--color-text)] leading-tight"
-            style={{ marginBottom: 'clamp(1.5rem, 2vw, 2rem)' }}
+            className="text-3xl md:text-4xl font-bold leading-tight"
+            style={{
+              color: colors.headingSecondary,
+              marginBottom: 'clamp(1.5rem, 2vw, 2rem)'
+            }}
           >
             {rightColumn.title}
           </h3>
-          <p className="text-[var(--color-text)] text-lg leading-relaxed">
+          <p
+            className="text-lg leading-relaxed"
+            style={{ color: colors.textColor }}
+          >
             {rightColumn.content}
           </p>
         </div>

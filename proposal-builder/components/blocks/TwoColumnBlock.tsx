@@ -1,3 +1,5 @@
+import { getBrandColors } from '@/lib/brandColors';
+
 interface ColumnContent {
   // Format 1: BOOM templates with items list
   title?: string;
@@ -21,6 +23,7 @@ interface TwoColumnBlockProps {
 
 export function TwoColumnBlock({ content, brand }: TwoColumnBlockProps) {
   const { heading, leftColumn, rightColumn, reverseOnMobile = false } = content;
+  const colors = getBrandColors(brand);
 
   const renderColumn = (column: ColumnContent) => {
     // Safety check: ensure column exists
@@ -47,8 +50,9 @@ export function TwoColumnBlock({ content, brand }: TwoColumnBlockProps) {
         <div className="flex flex-col justify-center h-full">
           {column.title && (
             <h3
-              className="text-2xl md:text-3xl font-bold text-[var(--color-text)] leading-tight"
+              className="text-2xl md:text-3xl font-bold leading-tight"
               style={{
+                color: colors.headingSecondary,
                 marginBottom: "clamp(1rem, 1.5vw, 1.5rem)",
               }}
             >
@@ -61,7 +65,10 @@ export function TwoColumnBlock({ content, brand }: TwoColumnBlockProps) {
                 <span className="text-[var(--color-primary)] font-bold mt-1">
                   •
                 </span>
-                <span className="text-[var(--color-muted)] text-base">
+                <span
+                  className="text-base"
+                  style={{ color: colors.textColor }}
+                >
                   {item}
                 </span>
               </li>
@@ -76,8 +83,9 @@ export function TwoColumnBlock({ content, brand }: TwoColumnBlockProps) {
       <div className="flex flex-col justify-center h-full">
         {column.title && (
           <h3
-            className="text-2xl md:text-3xl font-bold text-[var(--color-text)] leading-tight"
+            className="text-2xl md:text-3xl font-bold leading-tight"
             style={{
+              color: colors.headingSecondary,
               marginBottom: "clamp(1rem, 1.5vw, 1.5rem)",
             }}
           >
@@ -86,7 +94,8 @@ export function TwoColumnBlock({ content, brand }: TwoColumnBlockProps) {
         )}
         {column.text && (
           <div
-            className="prose prose-lg text-[var(--color-muted)] prose-headings:text-[var(--color-text)] prose-a:text-[var(--color-primary)]"
+            className="prose prose-lg prose-headings:text-[var(--color-text)] prose-a:text-[var(--color-primary)]"
+            style={{ color: colors.textColor }}
             dangerouslySetInnerHTML={{ __html: column.text }}
           />
         )}
@@ -99,8 +108,9 @@ export function TwoColumnBlock({ content, brand }: TwoColumnBlockProps) {
       {heading && (
         <div className="text-center mb-12">
           <h2
-            className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--color-text)] leading-tight"
+            className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
             style={{
+              color: colors.headingPrimary,
               marginBottom: "clamp(2rem, 3vw, 3rem)",
             }}
           >

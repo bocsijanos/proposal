@@ -1,3 +1,5 @@
+import { getBrandColors } from '@/lib/brandColors';
+
 interface PricingPlan {
   id: string;
   name: string;
@@ -22,6 +24,7 @@ interface PricingBlockProps {
 
 export function PricingBlock({ content, brand }: PricingBlockProps) {
   const { heading, description, plans } = content;
+  const colors = getBrandColors(brand);
 
   const formatPrice = (price: number, currency: string) => {
     return new Intl.NumberFormat('hu-HU', {
@@ -43,12 +46,18 @@ export function PricingBlock({ content, brand }: PricingBlockProps) {
     <section className="w-full py-12 md:py-16 lg:py-20">
       {/* Section Header */}
       <div className="text-center mb-12 md:mb-16 lg:mb-20">
-        <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--color-text)] leading-tight mb-6">
+        <h2
+          className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
+          style={{ color: colors.headingPrimary }}
+        >
           {heading}
         </h2>
         {description && (
           <div className="flex justify-center">
-            <p className="text-lg md:text-xl text-[var(--color-muted)] max-w-3xl leading-relaxed text-center">
+            <p
+              className="text-lg md:text-xl max-w-3xl leading-relaxed text-center"
+              style={{ color: colors.textColor }}
+            >
               {description}
             </p>
           </div>
@@ -78,11 +87,14 @@ export function PricingBlock({ content, brand }: PricingBlockProps) {
             )}
 
             <div className="text-center mb-6">
-              <h3 className="text-xl font-bold text-[var(--color-text)] mb-2">
+              <h3
+                className="text-xl font-bold mb-2"
+                style={{ color: colors.headingSecondary }}
+              >
                 {plan.name}
               </h3>
               {plan.description && (
-                <p className="text-sm text-[var(--color-muted)]">
+                <p className="text-sm" style={{ color: colors.textColor }}>
                   {plan.description}
                 </p>
               )}
@@ -90,19 +102,25 @@ export function PricingBlock({ content, brand }: PricingBlockProps) {
 
             <div className="text-center mb-6 pb-6 border-b border-[var(--color-border)]">
               {plan.originalPrice && (
-                <div className="text-sm text-[var(--color-muted)] line-through mb-1">
+                <div
+                  className="text-sm line-through mb-1"
+                  style={{ color: colors.textColor }}
+                >
                   {formatPrice(plan.originalPrice, plan.currency)} Ft
                 </div>
               )}
               <div className="flex items-baseline justify-center gap-1">
-                <span className="text-4xl font-bold text-[var(--color-text)]">
+                <span
+                  className="text-4xl font-bold"
+                  style={{ color: colors.textColor }}
+                >
                   {formatPrice(plan.discountedPrice, plan.currency)}
                 </span>
-                <span className="text-lg text-[var(--color-muted)]">
+                <span className="text-lg" style={{ color: colors.textColor }}>
                   Ft
                 </span>
               </div>
-              <div className="text-sm text-[var(--color-muted)] mt-1">
+              <div className="text-sm mt-1" style={{ color: colors.textColor }}>
                 {getBillingText(plan.billingPeriod)}
               </div>
             </div>
@@ -111,7 +129,7 @@ export function PricingBlock({ content, brand }: PricingBlockProps) {
               {plan.features.map((feature, idx) => (
                 <li key={idx} className="flex items-start gap-2 text-sm">
                   <span className="text-[var(--color-primary)] mt-0.5">✓</span>
-                  <span className="text-[var(--color-text)]">{feature}</span>
+                  <span style={{ color: colors.textColor }}>{feature}</span>
                 </li>
               ))}
             </ul>

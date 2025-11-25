@@ -5,8 +5,12 @@ import { useRef } from 'react';
 
 interface HeroBlockProps {
   content: {
-    heading: string;
+    headingPrefix?: string;
+    headingMain?: string;
+    headingSuffix?: string;
     subheading: string;
+    createdByPrefix?: string;
+    createdByName?: string;
     backgroundImage?: string;
     ctaText?: string;
     ctaUrl?: string;
@@ -20,13 +24,26 @@ interface HeroBlockProps {
 }
 
 export function HeroBlock({ content, brand, proposalData }: HeroBlockProps) {
-  const { heading, subheading, ctaText, ctaUrl } = content;
+  const {
+    headingPrefix,
+    headingMain,
+    headingSuffix,
+    subheading,
+    createdByPrefix,
+    createdByName: contentCreatedByName,
+    ctaText,
+    ctaUrl
+  } = content;
   const sectionRef = useRef<HTMLElement>(null);
 
   // Boom színek: #fa604a (narancs), #3e4581 (kék)
   const isBoom = brand === 'BOOM';
   const bgColor = isBoom ? '#fa604a' : 'var(--color-primary)';
   const secondaryColor = isBoom ? '#3e4581' : 'var(--color-secondary)';
+  const accentColor = isBoom ? '#3e4581' : 'var(--color-primary)';
+
+  // Determine final creator name (template or proposalData)
+  const finalCreatedByName = contentCreatedByName || proposalData?.createdByName;
 
   return (
     <section
@@ -41,21 +58,21 @@ export function HeroBlock({ content, brand, proposalData }: HeroBlockProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Left Column - Text Content */}
           <div className="flex flex-col gap-6 md:gap-8 text-left items-start">
-            {/* Main Heading - automatikusan beilleszti a cégnevet */}
+            {/* Main Heading - 3 részre bontott színezett heading */}
             <h1
               className="text-5xl md:text-6xl lg:text-7xl font-bold max-w-4xl leading-tight"
               style={{ textShadow: '0 2px 20px rgba(0,0,0,0.2)' }}
             >
-              {proposalData ? (
-                <>
-                  <span style={{ color: isBoom ? '#3e4581' : 'var(--color-primary)' }}>Árajánlat</span>
-                  {' '}
-                  <span className="text-white">{proposalData.clientName}</span>
-                  {' '}
-                  <span style={{ color: isBoom ? '#3e4581' : 'var(--color-primary)' }}>részére</span>
-                </>
-              ) : (
-                <span className="text-white">{heading}</span>
+              {headingPrefix && (
+                <span style={{ color: accentColor }}>{headingPrefix}</span>
+              )}
+              {headingPrefix && headingMain && ' '}
+              {headingMain && (
+                <span className="text-white">{headingMain}</span>
+              )}
+              {headingMain && headingSuffix && ' '}
+              {headingSuffix && (
+                <span style={{ color: accentColor }}>{headingSuffix}</span>
               )}
             </h1>
 
@@ -64,8 +81,8 @@ export function HeroBlock({ content, brand, proposalData }: HeroBlockProps) {
               {subheading}
             </p>
 
-            {/* Készítette badge */}
-            {proposalData?.createdByName && (
+            {/* Készítette badge - 2 soros megoldás */}
+            {finalCreatedByName && (
               <div className="mt-4 flex items-center gap-3 text-white/90">
                 <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -73,8 +90,10 @@ export function HeroBlock({ content, brand, proposalData }: HeroBlockProps) {
                   </svg>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs uppercase tracking-wider opacity-80">Készítette</span>
-                  <span className="text-sm font-semibold">{proposalData.createdByName}</span>
+                  {createdByPrefix && (
+                    <span className="text-xs uppercase tracking-wider opacity-80">{createdByPrefix}</span>
+                  )}
+                  <span className="text-sm font-semibold">{finalCreatedByName}</span>
                 </div>
               </div>
             )}

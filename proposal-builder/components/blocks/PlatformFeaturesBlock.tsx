@@ -1,3 +1,5 @@
+import { getBrandColors } from '@/lib/brandColors';
+
 interface NormalizedFeature {
   id: string;
   icon: string;
@@ -22,6 +24,7 @@ interface PlatformFeaturesBlockProps {
 }
 
 export function PlatformFeaturesBlock({ content, brand }: PlatformFeaturesBlockProps) {
+  const colors = getBrandColors(brand);
   const { heading, description, features: rawFeatures } = content;
 
   // Normalize features to handle both string arrays and object arrays
@@ -42,15 +45,16 @@ export function PlatformFeaturesBlock({ content, brand }: PlatformFeaturesBlockP
     <div className="py-12 md:py-16 lg:py-20">
       <div className="text-center mb-12">
         <h2
-          className="text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--color-text)] leading-tight"
+          className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
           style={{
+            color: colors.headingSecondary,
             marginBottom: 'clamp(2rem, 3vw, 3rem)'
           }}
         >
           {heading}
         </h2>
         {description && (
-          <p className="text-lg text-[var(--color-muted)] max-w-2xl mx-auto">
+          <p className="text-lg max-w-2xl mx-auto" style={{ color: colors.textColor }}>
             {description}
           </p>
         )}
@@ -74,17 +78,17 @@ export function PlatformFeaturesBlock({ content, brand }: PlatformFeaturesBlockP
 
             {/* Content */}
             <div className="flex-1">
-              <h3 className="text-2xl font-bold text-[var(--color-text)] mb-3">
+              <h3 className="text-2xl font-bold mb-3" style={{ color: colors.headingSecondary }}>
                 {feature.title}
               </h3>
-              <p className="text-[var(--color-muted)] mb-4">
+              <p className="mb-4" style={{ color: colors.textColor }}>
                 {feature.description}
               </p>
 
               {feature.benefits && feature.benefits.length > 0 && (
                 <ul className="space-y-2">
                   {feature.benefits.map((benefit, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-[var(--color-muted)]">
+                    <li key={idx} className="flex items-start gap-2" style={{ color: colors.textColor }}>
                       <span className="text-[var(--color-primary)] mt-1">✓</span>
                       <span>{benefit}</span>
                     </li>

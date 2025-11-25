@@ -1,3 +1,5 @@
+import { getBrandColors } from '@/lib/brandColors';
+
 interface StatsBlockProps {
   content: {
     heading?: string;
@@ -18,6 +20,8 @@ interface StatsBlockProps {
 
 export function StatsBlock({ content, brand }: StatsBlockProps) {
   const { heading, description, stats, columns = 4, backgroundColor = 'white' } = content;
+  const colors = getBrandColors(brand);
+  const isGradientBg = backgroundColor === 'gradient';
 
   const gridCols = {
     2: 'grid-cols-1 md:grid-cols-2',
@@ -29,14 +33,6 @@ export function StatsBlock({ content, brand }: StatsBlockProps) {
     ? { background: 'var(--gradient-hero)' }
     : {};
 
-  const textColor = backgroundColor === 'gradient'
-    ? 'text-white'
-    : 'text-[var(--color-text)]';
-
-  const mutedColor = backgroundColor === 'gradient'
-    ? 'text-white/80'
-    : 'text-[var(--color-muted)]';
-
   return (
     <div
       className="py-16 rounded-2xl"
@@ -46,8 +42,9 @@ export function StatsBlock({ content, brand }: StatsBlockProps) {
         <div className="text-center mb-12">
           {heading && (
             <h2
-              className={`text-4xl md:text-5xl lg:text-6xl font-bold ${textColor} leading-tight`}
+              className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight"
               style={{
+                color: isGradientBg ? 'white' : colors.headingPrimary,
                 marginBottom: 'clamp(2rem, 3vw, 3rem)'
               }}
             >
@@ -55,7 +52,10 @@ export function StatsBlock({ content, brand }: StatsBlockProps) {
             </h2>
           )}
           {description && (
-            <p className={`text-lg ${mutedColor} max-w-2xl mx-auto`}>
+            <p
+              className="text-lg max-w-2xl mx-auto"
+              style={{ color: isGradientBg ? 'rgba(255, 255, 255, 0.8)' : colors.textColor }}
+            >
               {description}
             </p>
           )}
@@ -69,16 +69,25 @@ export function StatsBlock({ content, brand }: StatsBlockProps) {
             className="text-center"
           >
             {stat.icon && (
-              <div className="text-4xl mb-3">
+              <div
+                className="text-4xl mb-3"
+                style={{ color: isGradientBg ? 'white' : colors.headingSecondary }}
+              >
                 {stat.icon}
               </div>
             )}
-            <div className={`text-4xl md:text-5xl font-bold ${textColor} mb-2`}>
+            <div
+              className="text-4xl md:text-5xl font-bold mb-2"
+              style={{ color: isGradientBg ? 'white' : colors.headingSecondary }}
+            >
               {stat.prefix}
               {stat.value}
               {stat.suffix}
             </div>
-            <div className={`text-lg ${mutedColor}`}>
+            <div
+              className="text-lg"
+              style={{ color: isGradientBg ? 'rgba(255, 255, 255, 0.8)' : colors.textColor }}
+            >
               {stat.label}
             </div>
           </div>
