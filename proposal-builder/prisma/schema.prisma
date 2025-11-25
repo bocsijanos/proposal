@@ -158,6 +158,10 @@ model ProposalBlock {
   templateId     String?   @map("template_id")
   template       BlockTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
 
+  // Custom Component Code (proposal-specific override)
+  customComponentId String?  @map("custom_component_id")
+  customComponent   ProposalComponentCode? @relation(fields: [customComponentId], references: [id], onDelete: SetNull)
+
   // Timestamps
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
@@ -166,6 +170,7 @@ model ProposalBlock {
   @@index([proposalId, displayOrder])
   @@index([proposalId, isEnabled])
   @@index([blockType])
+  @@index([customComponentId])
   @@map("proposal_blocks")
 }
 
@@ -220,6 +225,42 @@ model BlockTemplate {
   @@index([brand, isActive])
   @@index([displayOrder])
   @@map("block_templates")
+}
+
+// ============================================================================
+// PROPOSAL-SPECIFIC COMPONENT CODE
+// ============================================================================
+
+model ProposalComponentCode {
+  id             String    @id @default(cuid())
+  proposalId     String    @map("proposal_id")
+  blockType      BlockType @map("block_type")
+
+  // Component Source Code (copied from ComponentSource at proposal creation)
+  sourceCode     String    @db.Text
+  compiledCode   String?   @db.Text
+  schema         Json      // JSON schema for dynamic form generation
+
+  // Versioning (inherited from ComponentSource)
+  sourceVersion  Int       @default(1) @map("source_version")
+
+  // Metadata
+  isCustomized   Boolean   @default(false) @map("is_customized") // Has this been edited after creation?
+  lastEditedBy   String?   @map("last_edited_by")
+  lastEditedAt   DateTime? @map("last_edited_at")
+
+  // Timestamps
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  blocks         ProposalBlock[]
+
+  @@unique([proposalId, blockType])
+  @@index([proposalId])
+  @@index([blockType])
+  @@index([isCustomized])
+  @@map("proposal_component_code")
 }
 
 // ============================================================================

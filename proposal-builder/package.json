@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "init-db": "node scripts/init-db.mjs",
-    "seed:sample": "tsx scripts/create-sample.ts"
+    "seed:sample": "tsx scripts/create-sample.ts",
+    "migrate:components": "tsx scripts/migrate-components-to-db.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

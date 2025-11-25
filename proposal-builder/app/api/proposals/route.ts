@@ -110,6 +110,21 @@ export async function POST(request: NextRequest) {
       counter++;
     }
 
+    // First, create the proposal to get its ID
+    const proposal = await prisma.proposal.create({
+      data: {
+        slug,
+        clientName,
+        clientContactName: clientContactName || null,
+        clientPhone: clientPhone || null,
+        clientEmail: clientEmail || null,
+        brand,
+        status: 'DRAFT',
+        createdById: session.user.id,
+        createdByName: session.user.name || session.user.email || 'Unknown',
+      },
+    });
+
     // Try to load blocks from templates first (filtered by brand)
     const templates = await prisma.blockTemplate.findMany({
       where: {
@@ -118,6 +133,31 @@ export async function POST(request: NextRequest) {
       },
       orderBy: { displayOrder: 'asc' },
     });
+
+    // Load all component sources to copy to proposal
+    const componentSources = await prisma.componentSource.findMany({
+      where: {
+        isActive: true,
+      },
+    });
+
+    // Create ProposalComponentCode entries for each block type
+    const componentCodeMap = new Map<string, string>();
+
+    for (const source of componentSources) {
+      const proposalComponentCode = await prisma.proposalComponentCode.create({
+        data: {
+          proposalId: proposal.id,
+          blockType: source.blockType,
+          sourceCode: source.sourceCode,
+          compiledCode: source.compiledCode,
+          schema: source.schema,
+          sourceVersion: source.version,
+          isCustomized: false,
+        },
+      });
+      componentCodeMap.set(source.blockType, proposalComponentCode.id);
+    }
 
     let defaultBlocks;
 
@@ -128,6 +168,7 @@ export async function POST(request: NextRequest) {
         displayOrder: index, // Always use index to ensure unique displayOrder
         isEnabled: template.isActive,
         content: template.defaultContent,
+        customComponentId: componentCodeMap.get(template.blockType) || null,
       }));
     } else {
       // Define all available block types with default content (fallback)
@@ -142,6 +183,7 @@ export async function POST(request: NextRequest) {
           showCTA: true,
           ctaText: 'Ajánlat bekérése',
         },
+        customComponentId: componentCodeMap.get('HERO') || null,
       },
       {
         blockType: 'VALUE_PROP' as const,
@@ -164,6 +206,7 @@ export async function POST(request: NextRequest) {
             content: 'Ügyfeleink átlagosan 3x-es növekedést érnek el az első 6 hónapban. Nem csak kampányokat futtatunk, hanem hosszú távú partneri kapcsolatot építünk. Minden projektet egyedi igények szerint alakítunk, mert tudjuk, hogy nincs két egyforma vállalkozás.',
           },
         },
+        customComponentId: componentCodeMap.get('VALUE_PROP') || null,
       },
       {
         blockType: 'SERVICES_GRID' as const,
@@ -214,6 +257,7 @@ export async function POST(request: NextRequest) {
             }
           ],
         },
+        customComponentId: componentCodeMap.get('SERVICES_GRID') || null,
       },
       {
         blockType: 'PLATFORM_FEATURES' as const,
@@ -223,6 +267,7 @@ export async function POST(request: NextRequest) {
           heading: 'Platform szolgáltatások',
           features: [],
         },
+        customComponentId: componentCodeMap.get('PLATFORM_FEATURES') || null,
       },
       {
         blockType: 'PRICING_TABLE' as const,
@@ -285,6 +330,7 @@ export async function POST(request: NextRequest) {
             },
           ],
         },
+        customComponentId: componentCodeMap.get('PRICING_TABLE') || null,
       },
       {
         blockType: 'PROCESS_TIMELINE' as const,
@@ -323,6 +369,7 @@ export async function POST(request: NextRequest) {
             }
           ],
         },
+        customComponentId: componentCodeMap.get('PROCESS_TIMELINE') || null,
       },
       {
         blockType: 'STATS' as const,
@@ -358,6 +405,7 @@ export async function POST(request: NextRequest) {
             }
           ],
         },
+        customComponentId: componentCodeMap.get('STATS') || null,
       },
       {
         blockType: 'GUARANTEES' as const,
@@ -376,6 +424,7 @@ export async function POST(request: NextRequest) {
             'Folyamatos képzés és iparági trendek követése'
           ],
         },
+        customComponentId: componentCodeMap.get('GUARANTEES') || null,
       },
       {
         blockType: 'CLIENT_LOGOS' as const,
@@ -385,6 +434,7 @@ export async function POST(request: NextRequest) {
           heading: 'Ügyfeleink',
           logos: [],
         },
+        customComponentId: componentCodeMap.get('CLIENT_LOGOS') || null,
       },
       {
         blockType: 'TWO_COLUMN' as const,
@@ -402,6 +452,7 @@ export async function POST(request: NextRequest) {
             text: '',
           },
         },
+        customComponentId: componentCodeMap.get('TWO_COLUMN') || null,
       },
       {
         blockType: 'TEXT_BLOCK' as const,
@@ -410,6 +461,7 @@ export async function POST(request: NextRequest) {
         content: {
           body: '',
         },
+        customComponentId: componentCodeMap.get('TEXT_BLOCK') || null,
       },
       {
         blockType: 'CTA' as const,
@@ -427,6 +479,7 @@ export async function POST(request: NextRequest) {
             url: 'tel:+36301234567',
           },
         },
+        customComponentId: componentCodeMap.get('CTA') || null,
       },
     ];
 
@@ -449,22 +502,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create proposal with all default blocks
-    const proposal = await prisma.proposal.create({
-      data: {
-        slug,
-        clientName,
-        clientContactName: clientContactName || null,
-        clientPhone: clientPhone || null,
-        clientEmail: clientEmail || null,
-        brand,
-        status: 'DRAFT',
-        createdById: session.user.id,
-        createdByName: session.user.name || session.user.email || 'Unknown',
-        blocks: {
-          create: defaultBlocks,
-        },
-      },
+    // Create blocks for the proposal
+    await prisma.proposalBlock.createMany({
+      data: defaultBlocks.map(block => ({
+        ...block,
+        proposalId: proposal.id,
+      })),
+    });
+
+    // Fetch the complete proposal with blocks
+    const completeProposal = await prisma.proposal.findUnique({
+      where: { id: proposal.id },
       include: {
         blocks: {
           orderBy: {
@@ -474,7 +522,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(proposal, { status: 201 });
+    return NextResponse.json(completeProposal, { status: 201 });
   } catch (error) {
     console.error('Error creating proposal:', error);
     return NextResponse.json(
