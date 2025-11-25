@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface BlockEditorProps {
@@ -30,6 +30,13 @@ export function BlockEditor({ block, onSave, onCancel, allowBrandChange = false 
   const [error, setError] = useState('');
   const [showFields, setShowFields] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Update content when block changes (e.g., switching between templates)
+  useEffect(() => {
+    setContent(JSON.stringify(block.content, null, 2));
+    setBrand(block.brand || 'BOOM');
+    setError('');
+  }, [block.id, block.content, block.brand]);
 
   const handleSave = () => {
     try {
