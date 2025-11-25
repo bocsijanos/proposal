@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { BlockEditor } from '@/components/builder/BlockEditor';
+import { BlockEditor, AVAILABLE_FIELDS, EditorState } from '@/components/builder/BlockEditor';
 import { BlockRenderer } from '@/components/builder/BlockRenderer';
 import {
   DndContext,
@@ -192,6 +192,7 @@ export default function TemplatesPage() {
   const [saving, setSaving] = useState(false);
   const [viewMode, setViewMode] = useState<'preview' | 'compact'>('preview');
   const [selectedBrand, setSelectedBrand] = useState<'BOOM' | 'AIBOOST'>('BOOM');
+  const [showFieldsDropdown, setShowFieldsDropdown] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -459,6 +460,127 @@ export default function TemplatesPage() {
           </div>
         )}
       </div>
+
+      {/* Full-width Sticky Bottom Bar - Only visible when editing */}
+      {editingId && (
+        <div className="fixed bottom-0 left-0 right-0 bg-[#3e4581] border-t-2 border-[#2d3563] shadow-2xl z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-center justify-between gap-6">
+              {/* Left side: Brand Selector and Fields */}
+              <div className="flex items-center gap-3">
+                {/* Brand Selector */}
+                <button
+                  onClick={() => {
+                    const editorState = (window as any).__editorState as EditorState;
+                    if (editorState) editorState.setBrand('BOOM');
+                  }}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-xl transition-all ${
+                    (window as any).__editorState?.brand === 'BOOM'
+                      ? 'bg-[#fa604a] shadow-lg scale-110'
+                      : 'bg-white/10 hover:bg-white/20'
+                  }`}
+                  title="BOOM"
+                >
+                  💥
+                </button>
+                <button
+                  onClick={() => {
+                    const editorState = (window as any).__editorState as EditorState;
+                    if (editorState) editorState.setBrand('AIBOOST');
+                  }}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-xl transition-all ${
+                    (window as any).__editorState?.brand === 'AIBOOST'
+                      ? 'bg-[#fa604a] shadow-lg scale-110'
+                      : 'bg-white/10 hover:bg-white/20'
+                  }`}
+                  title="AIBOOST"
+                >
+                  🤖
+                </button>
+
+                {/* Beszúrható mezők dropdown */}
+                <div className="relative ml-2">
+                  <button
+                    onClick={() => setShowFieldsDropdown(!showFieldsDropdown)}
+                    className="w-10 h-10 rounded-full bg-[#fa604a] hover:bg-[#e54030] flex items-center justify-center text-xl transition-all shadow-lg"
+                    title="Beszúrható mezők"
+                  >
+                    📋
+                  </button>
+                  {showFieldsDropdown && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setShowFieldsDropdown(false)}
+                      />
+                      <div className="absolute bottom-full left-0 mb-2 w-64 bg-white border border-gray-300 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto">
+                        <div className="p-2 border-b border-gray-200 bg-gray-50">
+                          <div className="text-xs font-medium text-[var(--color-text)]">
+                            Beszúrható mezők
+                          </div>
+                        </div>
+                        <div className="p-2 space-y-1">
+                          {AVAILABLE_FIELDS.map((field) => (
+                            <button
+                              key={field.value}
+                              onClick={() => {
+                                const editorState = (window as any).__editorState as EditorState;
+                                if (editorState) {
+                                  editorState.insertField(field.value);
+                                  setShowFieldsDropdown(false);
+                                }
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded transition-colors"
+                            >
+                              <div className="font-medium text-[var(--color-text)]">
+                                {field.label}
+                              </div>
+                              <div className="text-xs text-[var(--color-muted)] mt-0.5">
+                                {field.description}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Center: Editing title */}
+              <div className="flex-1 text-center">
+                <span className="text-base font-bold text-white">
+                  Szerkesztés: {templates.find(t => t.id === editingId)?.blockType.replace(/_/g, ' ')}
+                </span>
+              </div>
+
+              {/* Right side: Action buttons */}
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={handleCancel}
+                  className="bg-white/10 text-white hover:bg-white/20 border-0 backdrop-blur-sm"
+                  size="sm"
+                >
+                  Mégse
+                </Button>
+                <Button
+                  onClick={() => {
+                    const editorState = (window as any).__editorState as EditorState;
+                    if (editorState && !editorState.parseError) {
+                      editorState.handleSave();
+                    }
+                  }}
+                  disabled={saving || (window as any).__editorState?.parseError}
+                  className="bg-[#fa604a] text-white hover:bg-[#e54030] border-0 font-semibold shadow-lg disabled:opacity-50"
+                  size="sm"
+                >
+                  {saving ? 'Mentés...' : '💾 Mentés'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

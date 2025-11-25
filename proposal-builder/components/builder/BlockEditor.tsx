@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
 import { BlockRenderer } from '@/components/builder/BlockRenderer';
 
 interface BlockEditorProps {
@@ -16,8 +15,8 @@ interface BlockEditorProps {
   allowBrandChange?: boolean;
 }
 
-// Available placeholders for dynamic content
-const AVAILABLE_FIELDS = [
+// Available placeholders for dynamic content - exported for use in parent
+export const AVAILABLE_FIELDS = [
   { label: 'Ügyfél neve', value: '{{clientName}}', description: 'Az ügyfél cég neve' },
   { label: 'Kapcsolattartó neve', value: '{{clientContactName}}', description: 'Kapcsolattartó teljes neve' },
   { label: 'Telefon', value: '{{clientPhone}}', description: 'Ügyfél telefonszáma' },
@@ -25,14 +24,24 @@ const AVAILABLE_FIELDS = [
   { label: 'Létrehozó neve', value: '{{createdByName}}', description: 'Ajánlatot készítő neve' },
 ];
 
+// Export editor state data for parent component to use
+export interface EditorState {
+  content: string;
+  brand: 'BOOM' | 'AIBOOST';
+  parseError: boolean;
+  textareaRef: React.RefObject<HTMLTextAreaElement>;
+  setBrand: (brand: 'BOOM' | 'AIBOOST') => void;
+  setContent: (content: string) => void;
+  insertField: (fieldValue: string) => void;
+  handleSave: () => void;
+}
+
 export function BlockEditor({ block, onSave, onCancel, allowBrandChange = false }: BlockEditorProps) {
   // Initialize with the exact content from block prop
   const initialContent = useMemo(() => JSON.stringify(block.content, null, 2), [block.id]);
 
   const [content, setContent] = useState(initialContent);
   const [brand, setBrand] = useState<'BOOM' | 'AIBOOST'>(block.brand || 'BOOM');
-  const [error, setError] = useState('');
-  const [showFields, setShowFields] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Update content when block ID changes (switching templates)
@@ -47,17 +56,15 @@ export function BlockEditor({ block, onSave, onCancel, allowBrandChange = false 
     const newContent = JSON.stringify(block.content, null, 2);
     setContent(newContent);
     setBrand(block.brand || 'BOOM');
-    setError('');
   }, [block.id]);
 
   const handleSave = () => {
     try {
       const parsed = JSON.parse(content);
-      setError('');
       console.log('Saving content:', parsed);
       onSave(parsed, allowBrandChange ? brand : undefined);
     } catch (e) {
-      setError('Hibás JSON formátum! Kérlek ellenőrizd a szintaxist.');
+      // Error will be shown in parent component
     }
   };
 
@@ -93,98 +100,24 @@ export function BlockEditor({ block, onSave, onCancel, allowBrandChange = false 
     }
   }, [content, block.content]);
 
+  // Expose editor state for parent component (stored in window for access)
+  useEffect(() => {
+    (window as any).__editorState = {
+      content,
+      brand,
+      parseError,
+      textareaRef,
+      setBrand,
+      setContent,
+      insertField,
+      handleSave,
+      onCancel,
+      allowBrandChange,
+    };
+  }, [content, brand, parseError, allowBrandChange]);
+
   return (
     <div className="mt-4 bg-gray-50 rounded-lg border border-gray-200">
-      {/* Header with controls */}
-      <div className="p-6 border-b border-gray-200 bg-white rounded-t-lg">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-semibold text-[var(--color-text)]">
-            Blokk szerkesztése: {block.blockType.replace(/_/g, ' ')}
-          </h3>
-
-          <div className="flex items-center gap-2">
-            {/* Fields dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setShowFields(!showFields)}
-                className="px-3 py-1 text-sm bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 border border-blue-200 transition-colors"
-              >
-                📋 Beszúrható mezők
-              </button>
-
-              {showFields && (
-                <>
-                  {/* Backdrop */}
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setShowFields(false)}
-                  />
-
-                  {/* Dropdown */}
-                  <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 z-20 max-h-80 overflow-y-auto">
-                    <div className="p-3 border-b border-gray-200 bg-gray-50">
-                      <p className="text-xs font-medium text-gray-700">
-                        Kattints egy mezőre a beszúráshoz
-                      </p>
-                    </div>
-                    {AVAILABLE_FIELDS.map((field) => (
-                      <button
-                        key={field.value}
-                        onClick={() => {
-                          insertField(field.value);
-                          setShowFields(false);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
-                      >
-                        <div className="flex items-start gap-2">
-                          <span className="text-lg">📌</span>
-                          <div className="flex-1">
-                            <div className="font-medium text-sm text-gray-900">{field.label}</div>
-                            <div className="text-xs text-gray-500 mt-0.5">{field.description}</div>
-                            <code className="text-xs bg-gray-100 px-2 py-0.5 rounded mt-1 inline-block text-blue-600">
-                              {field.value}
-                            </code>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Brand selector - only shown if allowBrandChange is true */}
-            {allowBrandChange && (
-              <div className="flex items-center gap-2 bg-white rounded-lg p-1 border border-gray-200">
-                <button
-                  onClick={() => setBrand('BOOM')}
-                  className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                    brand === 'BOOM'
-                      ? 'bg-[var(--color-primary)] text-white shadow-sm font-medium'
-                      : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                  }`}
-                >
-                  💥 BOOM
-                </button>
-                <button
-                  onClick={() => setBrand('AIBOOST')}
-                  className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                    brand === 'AIBOOST'
-                      ? 'bg-[var(--color-primary)] text-white shadow-sm font-medium'
-                      : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                  }`}
-                >
-                  🤖 AIBOOST
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-        <p className="text-sm text-[var(--color-muted)]">
-          Szerkeszd meg a tartalmat JSON formátumban. Az élő előnézet azonnal frissül ahogy írsz.
-        </p>
-      </div>
-
       {/* Vertical layout: Live Preview (top) + JSON Editor (bottom) */}
       <div className="space-y-4 p-6">
         {/* Top: Live Preview */}
@@ -219,7 +152,7 @@ export function BlockEditor({ block, onSave, onCancel, allowBrandChange = false 
         </div>
 
         {/* Bottom: JSON Editor (compact) */}
-        <div className="space-y-2">
+        <div className="space-y-2 mb-24">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium text-[var(--color-text)]">
               JSON Szerkesztő
@@ -237,23 +170,6 @@ export function BlockEditor({ block, onSave, onCancel, allowBrandChange = false 
             className="w-full h-32 font-mono text-xs p-3 rounded border border-gray-300 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] bg-white resize-y"
             placeholder="{ ... }"
           />
-        </div>
-      </div>
-
-      {/* Footer with action buttons */}
-      <div className="p-6 border-t border-gray-200 bg-white rounded-b-lg">
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
-            {error}
-          </div>
-        )}
-        <div className="flex items-center gap-3">
-          <Button onClick={handleSave} size="sm">
-            💾 Mentés
-          </Button>
-          <Button onClick={onCancel} variant="outline" size="sm">
-            Mégse
-          </Button>
         </div>
       </div>
     </div>
