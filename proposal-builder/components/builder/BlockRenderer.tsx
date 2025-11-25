@@ -10,6 +10,8 @@ import { TextBlock } from '@/components/blocks/TextBlock';
 import { TwoColumnBlock } from '@/components/blocks/TwoColumnBlock';
 import { PlatformFeaturesBlock } from '@/components/blocks/PlatformFeaturesBlock';
 import { StatsBlock } from '@/components/blocks/StatsBlock';
+import { BonusFeaturesBlock } from '@/components/blocks/BonusFeaturesBlock';
+import { PartnerGridBlock } from '@/components/blocks/PartnerGridBlock';
 
 interface BlockRendererProps {
   block: {
@@ -38,6 +40,8 @@ export function BlockRenderer({ block, brand, proposalData }: BlockRendererProps
     TWO_COLUMN: TwoColumnBlock,
     PLATFORM_FEATURES: PlatformFeaturesBlock,
     STATS: StatsBlock,
+    BONUS_FEATURES: BonusFeaturesBlock,
+    PARTNER_GRID: PartnerGridBlock,
   };
 
   const Component = blockComponents[block.blockType];

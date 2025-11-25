@@ -112,7 +112,7 @@ export default function DashboardLayout({
                     {session.user?.name || session.user?.email}
                   </p>
                   <p className="text-xs text-[var(--color-muted)]">
-                    {(session.user as any)?.role || 'Admin'}
+                    {session.user.role || 'Admin'}
                   </p>
                 </div>
                 <Button

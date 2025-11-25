@@ -1,8 +1,16 @@
+interface NormalizedFeature {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+  benefits?: string[];
+}
+
 interface PlatformFeaturesBlockProps {
   content: {
     heading: string;
     description?: string;
-    features: Array<{
+    features: Array<string> | Array<{
       id: string;
       icon: string;
       title: string;
@@ -14,7 +22,21 @@ interface PlatformFeaturesBlockProps {
 }
 
 export function PlatformFeaturesBlock({ content, brand }: PlatformFeaturesBlockProps) {
-  const { heading, description, features } = content;
+  const { heading, description, features: rawFeatures } = content;
+
+  // Normalize features to handle both string arrays and object arrays
+  const features: NormalizedFeature[] = (rawFeatures as any[]).map((feature, index) => {
+    if (typeof feature === 'string') {
+      return {
+        id: `feature-${index}`,
+        icon: '✓',
+        title: feature,
+        description: '',
+        benefits: []
+      };
+    }
+    return feature;
+  });
 
   return (
     <div className="py-12 md:py-16 lg:py-20">

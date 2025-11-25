@@ -185,7 +185,6 @@ async function createTables() {
     console.error('❌ Error creating tables:', error);
     process.exit(1);
   } finally {
-    await pool.end();
   }
 }
 

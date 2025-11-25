@@ -166,7 +166,6 @@ async function addMoreSamples() {
   } catch (error) {
     console.error('❌ Hiba:', error);
   } finally {
-    await pool.end();
   }
 }
 

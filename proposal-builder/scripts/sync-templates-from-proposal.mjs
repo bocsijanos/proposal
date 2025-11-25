@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
 import pkg from 'pg';
 const { Pool } = pkg;
 
@@ -8,15 +7,8 @@ if (!process.env.DATABASE_URL) {
   process.env.DATABASE_URL = 'postgres://postgres:postgres@127.0.0.1:51214/postgres?sslmode=disable';
 }
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 1,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
-});
 
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 async function main() {
   try {
@@ -76,7 +68,6 @@ async function main() {
     console.log(`   - Disabled: ${proposal.blocks.filter(b => !b.isEnabled).length}`);
   } finally {
     await prisma.$disconnect();
-    await pool.end();
   }
 }
 

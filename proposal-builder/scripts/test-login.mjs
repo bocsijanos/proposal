@@ -77,7 +77,6 @@ async function testLogin() {
   } catch (error) {
     console.error('❌ Hiba:', error);
   } finally {
-    await pool.end();
   }
 }
 

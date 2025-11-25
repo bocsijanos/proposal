@@ -1,15 +1,17 @@
+interface CTAButton {
+  text: string;
+  url: string;
+}
+
 interface CTABlockProps {
   content: {
     heading: string;
     description?: string;
-    primaryCta: {
-      text: string;
-      url: string;
-    };
-    secondaryCta?: {
-      text: string;
-      url: string;
-    };
+    primaryCta?: CTAButton;
+    secondaryCta?: CTAButton;
+    // Legacy support
+    primaryButton?: CTAButton;
+    secondaryButton?: CTAButton;
     backgroundColor?: string;
   };
   brand: 'BOOM' | 'AIBOOST';
@@ -19,8 +21,8 @@ export function CTABlock({ content, brand }: CTABlockProps) {
   const { heading, description } = content;
 
   // Támogatjuk mindkét formátumot: primaryCta/secondaryCta ÉS primaryButton/secondaryButton
-  const primaryCta = (content as any).primaryCta || (content as any).primaryButton;
-  const secondaryCta = (content as any).secondaryCta || (content as any).secondaryButton;
+  const primaryCta = content.primaryCta || content.primaryButton;
+  const secondaryCta = content.secondaryCta || content.secondaryButton;
 
   return (
     <section
@@ -51,12 +53,14 @@ export function CTABlock({ content, brand }: CTABlockProps) {
         )}
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-          <a
-            href={primaryCta.url}
-            className="inline-block px-10 py-5 bg-white text-[var(--color-primary)] rounded-xl font-semibold text-lg hover:opacity-90 hover:scale-105 transition-all shadow-lg min-w-[240px]"
-          >
-            {primaryCta.text}
-          </a>
+          {primaryCta && (
+            <a
+              href={primaryCta.url}
+              className="inline-block px-10 py-5 bg-white text-[var(--color-primary)] rounded-xl font-semibold text-lg hover:opacity-90 hover:scale-105 transition-all shadow-lg min-w-[240px]"
+            >
+              {primaryCta.text}
+            </a>
+          )}
           {secondaryCta && (
             <a
               href={secondaryCta.url}

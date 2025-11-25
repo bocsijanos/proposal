@@ -336,7 +336,6 @@ async function seedProduction() {
     console.error('❌ Hiba történt:', error);
     process.exit(1);
   } finally {
-    await pool.end();
   }
 }
 

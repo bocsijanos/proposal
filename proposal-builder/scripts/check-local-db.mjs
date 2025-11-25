@@ -76,7 +76,6 @@ async function checkLocalDb() {
   } catch (error) {
     console.error('❌ Hiba:', error.message);
   } finally {
-    await pool.end();
   }
 }
 

@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
-// GET /api/proposals - List all proposals
+// GET /api/proposals - List all proposals with pagination
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -12,7 +12,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Parse pagination parameters
+    const searchParams = request.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const skip = (page - 1) * limit;
+
+    // Get total count for pagination metadata
+    const total = await prisma.proposal.count();
+
     const proposals = await prisma.proposal.findMany({
+      skip,
+      take: limit,
       orderBy: {
         updatedAt: 'desc',
       },
@@ -37,7 +48,15 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(proposals);
+    return NextResponse.json({
+      proposals,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
     console.error('Error fetching proposals:', error);
     return NextResponse.json(
@@ -440,10 +459,10 @@ export async function POST(request: NextRequest) {
         clientEmail: clientEmail || null,
         brand,
         status: 'DRAFT',
-        createdById: (session.user as any).id,
-        createdByName: (session.user as any).name || session.user?.email || 'Unknown',
+        createdById: session.user.id,
+        createdByName: session.user.name || session.user.email || 'Unknown',
         blocks: {
-          create: defaultBlocks as any,
+          create: defaultBlocks,
         },
       },
       include: {

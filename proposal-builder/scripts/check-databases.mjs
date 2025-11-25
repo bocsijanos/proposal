@@ -51,7 +51,6 @@ async function checkDatabase(name, connectionString) {
   } catch (error) {
     console.error(`❌ Hiba ${name} ellenőrzésekor:`, error.message);
   } finally {
-    await pool.end();
   }
 }
 

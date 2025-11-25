@@ -40,7 +40,8 @@ export default function DashboardPage() {
       const response = await fetch('/api/proposals');
       if (!response.ok) throw new Error('Failed to fetch proposals');
       const data = await response.json();
-      setProposals(data);
+      // API returns { proposals: [...], pagination: {...} }
+      setProposals(data.proposals || []);
     } catch (err) {
       setError('Hiba történt az árajánlatok betöltésekor');
       console.error(err);

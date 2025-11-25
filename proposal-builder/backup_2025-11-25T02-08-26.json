@@ -1,0 +1,1291 @@
+{
+  "timestamp": "2025-11-25T02:08:26.428Z",
+  "proposals": [
+    {
+      "id": "cmidx2nls000ulo6oc7s01bji",
+      "slug": "pelda-ajanlat-2025",
+      "clientName": "Példa Vállalkozás",
+      "clientContactName": null,
+      "clientPhone": null,
+      "clientEmail": null,
+      "brand": "BOOM",
+      "status": "PUBLISHED",
+      "viewCount": 4,
+      "lastViewedAt": "2025-11-25T02:03:15.083Z",
+      "isTemplate": false,
+      "clonedFromId": null,
+      "createdById": "cmidx2nku0000lo6o1wu4ddl7",
+      "createdByName": null,
+      "createdAt": "2025-11-25T01:48:23.681Z",
+      "updatedAt": "2025-11-25T02:03:15.084Z",
+      "publishedAt": null,
+      "blocks": [
+        {
+          "id": "cmidx2nls000wlo6oadgwdlge",
+          "proposalId": "cmidx2nls000ulo6oc7s01bji",
+          "blockType": "HERO",
+          "displayOrder": 0,
+          "isEnabled": true,
+          "content": {
+            "ctaUrl": "#contact",
+            "ctaText": "Kezdjünk neki",
+            "heading": "Árajánlat 2025",
+            "version": "1.0",
+            "alignment": "center",
+            "subheading": "Modern marketing megoldások vállalkozásoknak",
+            "backgroundImage": "/images/hero-bg.jpg"
+          },
+          "templateId": "cmidx2nle000elo6orfylph3s",
+          "createdAt": "2025-11-25T01:48:23.681Z",
+          "updatedAt": "2025-11-25T01:48:23.681Z"
+        },
+        {
+          "id": "cmidx2nls000xlo6ogr0hdqll",
+          "proposalId": "cmidx2nls000ulo6oc7s01bji",
+          "blockType": "PRICING_TABLE",
+          "displayOrder": 1,
+          "isEnabled": true,
+          "content": {
+            "plans": [
+              {
+                "id": "1",
+                "name": "Meta PPC",
+                "ctaText": "Kezdjük el",
+                "currency": "HUF",
+                "features": [
+                  "Facebook hirdetések",
+                  "Instagram kampányok",
+                  "Kreatív gyártás",
+                  "Havi riport találkozó"
+                ],
+                "isPopular": false,
+                "description": "Facebook és Instagram hirdetések",
+                "billingPeriod": "monthly",
+                "originalPrice": null,
+                "discountedPrice": 169990
+              },
+              {
+                "id": "2",
+                "name": "Google + Meta",
+                "ctaText": "Kezdjük el",
+                "currency": "HUF",
+                "features": [
+                  "Minden Meta funkció",
+                  "Google Ads kezelés",
+                  "Remarketing kampányok",
+                  "Havi stratégiai konzultáció"
+                ],
+                "isPopular": true,
+                "description": "Kombinált kampánykezelés",
+                "billingPeriod": "monthly",
+                "originalPrice": 305820,
+                "discountedPrice": 271660
+              },
+              {
+                "id": "3",
+                "name": "Full Package",
+                "ctaText": "Egyeztetés",
+                "currency": "HUF",
+                "features": [
+                  "Minden előző funkció",
+                  "TikTok hirdetések",
+                  "E-mail marketing",
+                  "Landing oldal készítés"
+                ],
+                "isPopular": false,
+                "description": "Teljes körű marketing megoldás",
+                "billingPeriod": "monthly",
+                "originalPrice": null,
+                "discountedPrice": 450000
+              }
+            ],
+            "heading": "Válaszd ki a csomagod",
+            "version": "1.0",
+            "description": "Minden csomag tartalmazza a teljes körű kampánykezelést és havi riportolást."
+          },
+          "templateId": "cmidx2nl70005lo6od9jj44dw",
+          "createdAt": "2025-11-25T01:48:23.681Z",
+          "updatedAt": "2025-11-25T01:48:23.681Z"
+        }
+      ]
+    }
+  ],
+  "blockTemplates": [
+    {
+      "id": "cmidx2nl00002lo6oqlminjlh",
+      "blockType": "HERO",
+      "name": "Standard Hero",
+      "description": "Teljes szélességű hero háttérképpel és CTA-val",
+      "brand": "BOOM",
+      "defaultContent": {
+        "ctaUrl": "#contact",
+        "ctaText": "Kezdjünk neki",
+        "heading": "Árajánlat 2025",
+        "version": "1.0",
+        "alignment": "center",
+        "subheading": "Modern marketing megoldások vállalkozásoknak",
+        "backgroundImage": "/images/hero-bg.jpg"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 1,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.653Z",
+      "updatedAt": "2025-11-25T01:48:23.653Z"
+    },
+    {
+      "id": "cmidx2nl50003lo6o2g2rk2vg",
+      "blockType": "VALUE_PROP",
+      "name": "2 Oszlopos Értékajánlat",
+      "description": "Értékajánlat 2 oszlopban középső ikonnal",
+      "brand": "BOOM",
+      "defaultContent": {
+        "heading": "Miben nyújtunk többet?",
+        "iconUrl": "/images/value-icon.svg",
+        "version": "1.0",
+        "leftColumn": {
+          "items": [
+            "Transzparens kommunikáció",
+            "Folyamatos optimalizálás",
+            "Fix árazás, jutalék mentesen",
+            "Havi riport találkozó"
+          ],
+          "title": "Előnyeink"
+        },
+        "rightColumn": {
+          "title": "A mi hitvallásunk",
+          "content": "Úgy gondoljuk, hogy a sikeres marketing az őszinte partneri kapcsolaton alapul."
+        }
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 2,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.657Z",
+      "updatedAt": "2025-11-25T01:48:23.657Z"
+    },
+    {
+      "id": "cmidx2nl60004lo6omcdg03ls",
+      "blockType": "PLATFORM_FEATURES",
+      "name": "Platform Funkciók",
+      "description": "Platform logó és bullet pontok",
+      "brand": "BOOM",
+      "defaultContent": {
+        "heading": "Google PPC Hirdetéskezelés",
+        "version": "1.0",
+        "features": [
+          "Keresőhálózati kampányok",
+          "Display hálózati hirdetések",
+          "Shopping kampányok",
+          "YouTube video hirdetések",
+          "Remarketing kampányok"
+        ],
+        "description": "Teljes körű Google Ads kampánykezelés átfogó riportolással és folyamatos optimalizálással.",
+        "platformLogo": "/logos/google-ads.svg",
+        "platformName": "Google Ads",
+        "backgroundColor": "#4285f4"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 3,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.658Z",
+      "updatedAt": "2025-11-25T01:48:23.658Z"
+    },
+    {
+      "id": "cmidx2nl70005lo6od9jj44dw",
+      "blockType": "PRICING_TABLE",
+      "name": "3 Oszlopos Árazás",
+      "description": "Háromoszlopos árazási tábla kedvezménnyel",
+      "brand": "BOOM",
+      "defaultContent": {
+        "plans": [
+          {
+            "id": "1",
+            "name": "Meta PPC",
+            "ctaText": "Kezdjük el",
+            "currency": "HUF",
+            "features": [
+              "Facebook hirdetések",
+              "Instagram kampányok",
+              "Kreatív gyártás",
+              "Havi riport találkozó"
+            ],
+            "isPopular": false,
+            "description": "Facebook és Instagram hirdetések",
+            "billingPeriod": "monthly",
+            "originalPrice": null,
+            "discountedPrice": 169990
+          },
+          {
+            "id": "2",
+            "name": "Google + Meta",
+            "ctaText": "Kezdjük el",
+            "currency": "HUF",
+            "features": [
+              "Minden Meta funkció",
+              "Google Ads kezelés",
+              "Remarketing kampányok",
+              "Havi stratégiai konzultáció"
+            ],
+            "isPopular": true,
+            "description": "Kombinált kampánykezelés",
+            "billingPeriod": "monthly",
+            "originalPrice": 305820,
+            "discountedPrice": 271660
+          },
+          {
+            "id": "3",
+            "name": "Full Package",
+            "ctaText": "Egyeztetés",
+            "currency": "HUF",
+            "features": [
+              "Minden előző funkció",
+              "TikTok hirdetések",
+              "E-mail marketing",
+              "Landing oldal készítés"
+            ],
+            "isPopular": false,
+            "description": "Teljes körű marketing megoldás",
+            "billingPeriod": "monthly",
+            "originalPrice": null,
+            "discountedPrice": 450000
+          }
+        ],
+        "heading": "Válaszd ki a csomagod",
+        "version": "1.0",
+        "description": "Minden csomag tartalmazza a teljes körű kampánykezelést és havi riportolást."
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 4,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.659Z",
+      "updatedAt": "2025-11-25T01:48:23.659Z"
+    },
+    {
+      "id": "cmidx2nl80006lo6owjxu9n48",
+      "blockType": "GUARANTEES",
+      "name": "Garanciák",
+      "description": "3 oszlopos garancia szekció",
+      "brand": "BOOM",
+      "defaultContent": {
+        "heading": "Mire számíthatsz?",
+        "version": "1.0",
+        "leftColumn": [
+          "2 munkanapon belüli e-mail válaszidő",
+          "3 munkanapon belüli reakció módosítási kérésekre",
+          "4 munkanapon belül kampány módosítások"
+        ],
+        "centerImage": "/images/guarantees.svg",
+        "rightColumn": [
+          "Fix árazás, nincs jutalék",
+          "Minimum 3 hónapos együttműködés",
+          "Havi részletes riportolás"
+        ]
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 5,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.660Z",
+      "updatedAt": "2025-11-25T01:48:23.660Z"
+    },
+    {
+      "id": "cmidx2nl90007lo6ocjwo3jkw",
+      "blockType": "PROCESS_TIMELINE",
+      "name": "Folyamat Timeline",
+      "description": "Lépésről lépésre folyamat megjelenítése",
+      "brand": "BOOM",
+      "defaultContent": {
+        "steps": [
+          {
+            "id": "1",
+            "title": "1. Hónap",
+            "subtitle": "Felkészülés",
+            "description": "Stratégia egyeztetés, kampány setup, kreatív gyártás"
+          },
+          {
+            "id": "2",
+            "title": "2. Hónap",
+            "subtitle": "Indítás",
+            "description": "Kampányok indítása, tesztelés, első optimalizálások"
+          },
+          {
+            "id": "3",
+            "title": "3. Hónap",
+            "subtitle": "Optimalizálás",
+            "description": "Finomhangolás, skálázás, A/B tesztek"
+          },
+          {
+            "id": "4",
+            "title": "4+ Hónap",
+            "subtitle": "Növekedés",
+            "description": "Folyamatos fejlesztés és eredményközpontú működés"
+          }
+        ],
+        "heading": "Hogyan működünk együtt?",
+        "version": "1.0"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 6,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.661Z",
+      "updatedAt": "2025-11-25T01:48:23.661Z"
+    },
+    {
+      "id": "cmidx2nl90008lo6ola2l5606",
+      "blockType": "CLIENT_LOGOS",
+      "name": "Ügyfél Logók",
+      "description": "Grid elrendezésű logó showcase",
+      "brand": "BOOM",
+      "defaultContent": {
+        "logos": [
+          {
+            "id": "1",
+            "alt": "Ügyfél 1",
+            "url": "/logos/client-1.png"
+          },
+          {
+            "id": "2",
+            "alt": "Ügyfél 2",
+            "url": "/logos/client-2.png"
+          },
+          {
+            "id": "3",
+            "alt": "Ügyfél 3",
+            "url": "/logos/client-3.png"
+          },
+          {
+            "id": "4",
+            "alt": "Ügyfél 4",
+            "url": "/logos/client-4.png"
+          },
+          {
+            "id": "5",
+            "alt": "Ügyfél 5",
+            "url": "/logos/client-5.png"
+          },
+          {
+            "id": "6",
+            "alt": "Ügyfél 6",
+            "url": "/logos/client-6.png"
+          }
+        ],
+        "columns": 3,
+        "heading": "Partnereink",
+        "version": "1.0"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 7,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.662Z",
+      "updatedAt": "2025-11-25T01:48:23.662Z"
+    },
+    {
+      "id": "cmidx2nla0009lo6obqvh1pe8",
+      "blockType": "SERVICES_GRID",
+      "name": "Szolgáltatások Grid",
+      "description": "Kártyák elrendezésben szolgáltatások",
+      "brand": "BOOM",
+      "defaultContent": {
+        "columns": 3,
+        "heading": "További szolgáltatásaink",
+        "version": "1.0",
+        "services": [
+          {
+            "id": "1",
+            "icon": "/icons/email.svg",
+            "price": "450.000 Ft",
+            "title": "E-mail Marketing",
+            "description": "Automatizált e-mail kampányok, szegmentálás, reportolás"
+          },
+          {
+            "id": "2",
+            "icon": "/icons/landing.svg",
+            "price": "350.000 Ft",
+            "title": "Landing Oldal",
+            "description": "Konverzióra optimalizált landing oldalak tervezése és kivitelezése"
+          },
+          {
+            "id": "3",
+            "icon": "/icons/content.svg",
+            "price": "35.000 Ft/db",
+            "title": "Tartalomgyártás",
+            "description": "Blogcikkek, hírlevél tartalmak, social media posztok"
+          }
+        ]
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 8,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.663Z",
+      "updatedAt": "2025-11-25T01:48:23.663Z"
+    },
+    {
+      "id": "cmidx2nlb000alo6oyje2yb5p",
+      "blockType": "TEXT_BLOCK",
+      "name": "Szöveges Blokk",
+      "description": "Egyszerű szöveges tartalom",
+      "brand": "BOOM",
+      "defaultContent": {
+        "content": "Itt helyezhetsz el bármilyen kiegészítő információt, részletes leírást vagy magyarázatot.",
+        "heading": "Részletek",
+        "version": "1.0"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 9,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.663Z",
+      "updatedAt": "2025-11-25T01:48:23.663Z"
+    },
+    {
+      "id": "cmidx2nlc000blo6o0zmvidp2",
+      "blockType": "TWO_COLUMN",
+      "name": "Két Oszlop",
+      "description": "Kép és szöveg kombinált layout",
+      "brand": "BOOM",
+      "defaultContent": {
+        "ctaUrl": "#contact",
+        "content": "Több mint 5 éves tapasztalat a digitális marketingben. Segítettünk már 100+ ügyfélnek növelni online jelenlétüket.",
+        "ctaText": "Tudj meg többet",
+        "heading": "Miért válassz minket?",
+        "version": "1.0",
+        "imageUrl": "/images/placeholder.jpg",
+        "imageSide": "left"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 10,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.664Z",
+      "updatedAt": "2025-11-25T01:48:23.664Z"
+    },
+    {
+      "id": "cmidx2nlc000clo6o8wuca3zc",
+      "blockType": "CTA",
+      "name": "Call-to-Action",
+      "description": "Felhívás cselekvésre szekció",
+      "brand": "BOOM",
+      "defaultContent": {
+        "heading": "Készen állsz az indulásra?",
+        "version": "1.0",
+        "primaryCta": {
+          "url": "#contact",
+          "text": "Ajánlat kérés"
+        },
+        "description": "Kérj egyedi ajánlatot vagy egyeztess velünk egy ingyenes konzultáción.",
+        "secondaryCta": {
+          "url": "#meeting",
+          "text": "Konzultáció foglalás"
+        },
+        "backgroundColor": "#fa604a",
+        "backgroundImage": "/images/cta-bg.jpg"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 11,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.665Z",
+      "updatedAt": "2025-11-25T01:48:23.665Z"
+    },
+    {
+      "id": "cmidx2nld000dlo6oco9sxkb6",
+      "blockType": "STATS",
+      "name": "Statisztikák",
+      "description": "Számok és eredmények megjelenítése",
+      "brand": "BOOM",
+      "defaultContent": {
+        "stats": [
+          {
+            "id": "1",
+            "label": "Elégedett ügyfél",
+            "value": "100+"
+          },
+          {
+            "id": "2",
+            "label": "Év tapasztalat",
+            "value": "5+"
+          },
+          {
+            "id": "3",
+            "label": "Átlagos ROI",
+            "value": "250%"
+          },
+          {
+            "id": "4",
+            "label": "Támogatás",
+            "value": "24/7"
+          }
+        ],
+        "heading": "Eredményeink számokban",
+        "version": "1.0"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 12,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.665Z",
+      "updatedAt": "2025-11-25T01:48:23.665Z"
+    },
+    {
+      "id": "cmidx2nle000elo6orfylph3s",
+      "blockType": "HERO",
+      "name": "BOOM Árajánlat Cover 2025",
+      "description": "BOOM márkaidentitás szerinti hero blokk - Page 1",
+      "brand": "BOOM",
+      "defaultContent": {
+        "logo": "/images/boom/boom-logo.png",
+        "heading": "Árajánlat",
+        "version": "1.0",
+        "alignment": "center",
+        "subheading": "2025",
+        "backgroundImage": "/images/boom/hero-meeting-bg.jpg"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 100,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.666Z",
+      "updatedAt": "2025-11-25T01:48:23.666Z"
+    },
+    {
+      "id": "cmidx2nlf000flo6o7l0ubq05",
+      "blockType": "VALUE_PROP",
+      "name": "BOOM Filozófia és Előnyök",
+      "description": "Miben nyújtunk többet - Marketing Ökoszisztéma hitvallás - Page 2",
+      "brand": "BOOM",
+      "defaultContent": {
+        "email": "a.istvan@boommarketing.hu",
+        "heading": "Miben nyújtunk többet?",
+        "version": "1.0",
+        "leftColumn": {
+          "items": [
+            "7 év szakértői tapasztalat",
+            "Adatokra alapozzuk a döntéseinket",
+            "48 órán belül válaszolunk",
+            "Brand specifikus kampányok",
+            "Fix áron dolgozunk, jutalékmentesen",
+            "Senior kollégák kezelik a projekteket",
+            "Heti legfeljebb 2 új projektet vállalunk be",
+            "Évi 11 hónapban fogadunk új ügyfeleket",
+            "Nem csak riportokat küldünk, hanem havonta leülünk, beszélgetünk, ötletelünk"
+          ],
+          "title": "Miben nyújtunk többet?"
+        },
+        "subheading": "BOOM Marketing hitvallása",
+        "centerImage": "/images/boom/ecosystem-illustration.png",
+        "rightColumn": {
+          "quote": "\"Olyan marketing rendszer, ahol a benne foglalt elemek nem egymást kannibalizálva, hanem egymást segítve működnek.\"",
+          "title": "BOOM Marketing hitvallása",
+          "content": "Marketingre mindenkinek szüksége van, de fizetett hirdetésekre nem feltétlenül. Vannak olyan esetek, amikor már be kell hozni, de olyan is, amikor még nem kell ezzel foglalkozni. Mi Marketing Ökoszisztémában gondolkodunk.",
+          "subtitle": "\"Marketing ökoszisztéma\":"
+        }
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 101,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.667Z",
+      "updatedAt": "2025-11-25T01:48:23.667Z"
+    },
+    {
+      "id": "cmidx2nlg000glo6o12odx56s",
+      "blockType": "TWO_COLUMN",
+      "name": "Marketing Ökoszisztéma Magyarázat",
+      "description": "Miért legyen egy kézben a marketing rendszered - Marketinges eszköztára - Page 3",
+      "brand": "BOOM",
+      "defaultContent": {
+        "email": "a.istvan@boommarketing.hu",
+        "heading": "Miért legyen egy kézben a marketing rendszered?",
+        "version": "1.0",
+        "imageUrl": "/images/boom/ecosystem-diagram.png",
+        "caseStudy": {
+          "text": "Az egyik ügyfelünk Meta kampányait kezeltük 12x megtérülés mellett, amikor egyik nap csökkenni kezdtek a számok, drasztikusan. Utólag derült ki, hogy a Google kampányait kezelő másik csapat retargeting kampánya lemásolta a mi kampányinkat, így elvonta a figyelmet a Meta kampányokról, teljesen felbomlott az addig jól működő rendszer. Ha egy kézben lett volna a két platform, akkor egyensúly megtartása mellett, összehangolt kommunikációval hatékonyabb működést lehetett volna elérni. Később át is vettük a Google-t is, hogy ez többet ne történhessen meg."
+        },
+        "imageSide": "right",
+        "leftColumn": {
+          "items": [
+            "Dinamikus kapcsolattartás",
+            "Egymást segítő csatornák és kampányok",
+            "Egyensúlyba kerülnek az elemek",
+            "Hatékonyabb hirdetések",
+            "Folyamatos skálázhatóság",
+            "Biztonságosabb, nincs egy platform változásainak kiszolgáltatva a céged"
+          ],
+          "title": "Miért legyen egy kézben a marketing rendszered?"
+        },
+        "subheading": "Marketinges eszköztára",
+        "rightColumn": {
+          "items": [
+            "Egy jó marketinges olyan, mint egy profi szakács",
+            "Minél több eszköz áll rendelkezésre annál finomabb ételeket tud főzni",
+            "Vegyük példának az alábbit:",
+            "Egy Tik-Tok, Facebook és weboldal hármasból kombinált kampányokat tud készíteni",
+            "Tik-Tokon alacsony kattintási költségért oldallátogatókat terel a weboldalra, és a látogatókra a Facebookon visszacélozva fog eladni",
+            "Bármelyik eleme hiányzik a szakácsnak, ezt ez ételt nem tudja elkészíteni, csak megközelíteni tudná azt",
+            "Az ökoszisztéma elemei egymást segítve hoznak létre hatékonyabb kommunikációt"
+          ],
+          "title": "Marketinges eszköztára"
+        }
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 102,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.668Z",
+      "updatedAt": "2025-11-25T01:48:23.668Z"
+    },
+    {
+      "id": "cmidx2nlh000hlo6ondn9wla2",
+      "blockType": "PLATFORM_FEATURES",
+      "name": "Meta PPC Platform",
+      "description": "Meta (Facebook, Instagram) PPC részletek - Page 4",
+      "brand": "BOOM",
+      "defaultContent": {
+        "email": "a.istvan@boommarketing.hu",
+        "heading": "Meta PPC",
+        "version": "1.0",
+        "features": [
+          "Több platform egyidejűleg elérhető",
+          "Célcsoport alapján történő célzás",
+          "Ez A hirdetési felület",
+          "Itt érhető el a legnagyobb közönség",
+          "Könnyen elindítható",
+          "Extra költséget nem igényelnek a kampányok"
+        ],
+        "description": "Az indulása óta a Meta platform a fizetett hirdetési platformok koronázatlan királya. A mai napig itt érhető el a legtöbb ember. A többi hirdetési felülethez képest jóval egyszerűbb elindulni itt, statikus kreatívokkal vagy termékkatalógussal már indíthatóak is a kampányok. Több platform (Facebook, Instagram) egyidejű kezelése elérhető egy felületről.",
+        "platformLogo": "/logos/meta-logo.svg",
+        "platformName": "Meta PPC",
+        "backgroundColor": "#4267B2"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 103,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.669Z",
+      "updatedAt": "2025-11-25T01:48:23.669Z"
+    },
+    {
+      "id": "cmidx2nlh000ilo6oqb10f6c6",
+      "blockType": "PLATFORM_FEATURES",
+      "name": "Google Ads Platform",
+      "description": "Google Ads keresési platform részletek - Page 5",
+      "brand": "BOOM",
+      "defaultContent": {
+        "email": "a.istvan@boommarketing.hu",
+        "heading": "Google Keresés",
+        "version": "1.0",
+        "features": [
+          "Kulcsszavak alapján történő célzás",
+          "A legidősebb hirdetési felület",
+          "Könnyű pénz",
+          "Közvetlen igényre reagálunk",
+          "Nincs extra költsége a kampányoknak",
+          "Tapasztalat és tudás szükséges hozzá",
+          "Bonyolultabb és nehezebb rajta elindulni"
+        ],
+        "description": "A legidősebb hirdetési platform, ahol a vásárlói útvonal más részét érjük el, mint a többi felületen. Itt közvetlenül egy igényre reagálunk és nem mi keltjük fel azt, mint a többi felület esetén. Nincs extra költsége, mint egy TikTok fióknak. Technikai platform, ahol a megfelelő kulcsszavakkal történő célzás nagy szaktudást és tapasztalatot igényel, ezért nehezebb elindulni rajta.",
+        "platformLogo": "/logos/google-logo.svg",
+        "platformName": "Google",
+        "backgroundColor": "#4285F4"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 104,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.670Z",
+      "updatedAt": "2025-11-25T01:48:23.670Z"
+    },
+    {
+      "id": "cmidx2nli000jlo6oqfsnch02",
+      "blockType": "PLATFORM_FEATURES",
+      "name": "TikTok Platform",
+      "description": "TikTok hirdetési platform részletek - Page 6",
+      "brand": "BOOM",
+      "defaultContent": {
+        "email": "a.istvan@boommarketing.hu",
+        "heading": "TikTok",
+        "version": "1.0",
+        "features": [
+          "Még viszonylag olcsó hirdetési felület",
+          "Kisebb a verseny, mert magasabb a belépési küszöb",
+          "Fiatal közönséget hatékonyan érhetünk el",
+          "Minden célcsoport megtalálható a fiatalok mellett is",
+          "Extra költségként a videógyártás merül fel",
+          "Nagyobb a belépési küszöb, ami a versenyt is csökkenti"
+        ],
+        "description": "Ez a platform viszonylag még telítetlen, kisebb rajta a verseny, így a díjak is kedvezőbbek, mint a nagyobb testvéreiken. A platformon minden célcsoport elérhető, de a fiatal közönséget hatékonyabban lehet elérni itt. Az induláshoz szükséges videós tartalmakat gyártani, ami extra költséget jelent a többi platformhoz képest, viszont ezek a videós anyagok több platformon is felhasználhatóak (gyakran erősítik például a Facebookot is).",
+        "platformLogo": "/logos/tiktok-logo.svg",
+        "platformName": "TikTok",
+        "backgroundColor": "#000000"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 105,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.671Z",
+      "updatedAt": "2025-11-25T01:48:23.671Z"
+    },
+    {
+      "id": "cmidx2nlj000klo6o5jp8vu6u",
+      "blockType": "PRICING_TABLE",
+      "name": "BOOM Ökoszisztéma Árazás - 3 Platform",
+      "description": "Marketing ökoszisztéma építése árazási táblázat - Pages 7-8",
+      "brand": "BOOM",
+      "defaultContent": {
+        "email": "a.istvan@boommarketing.hu",
+        "note1": "Hogyan éri ez meg nekünk?",
+        "note2": "Hiszünk a hosszútávú együttműködésben, ezért átlátható fix árakon dolgozunk, jutalékmentesen.",
+        "plans": [
+          {
+            "id": "1",
+            "name": "1. Platform",
+            "ctaText": "Kezdjük el",
+            "currency": "HUF",
+            "features": [
+              "Választható platformok:",
+              "Google",
+              "Meta",
+              "LinkedIn",
+              "Criteo",
+              "Pinterest",
+              "Youtube"
+            ],
+            "isPopular": false,
+            "description": "Egy választott platform kezelése",
+            "billingPeriod": "monthly",
+            "originalPrice": null,
+            "discountedPrice": 169990
+          },
+          {
+            "id": "2",
+            "name": "2. Platform",
+            "ctaText": "Kezdjük el",
+            "currency": "HUF",
+            "features": [
+              "Választható platformok:",
+              "TikTok",
+              "Google",
+              "Meta",
+              "LinkedIn",
+              "Criteo",
+              "Pinterest",
+              "Youtube"
+            ],
+            "isPopular": true,
+            "description": "Két választott platform kezelése",
+            "billingPeriod": "monthly",
+            "originalPrice": null,
+            "discountedPrice": 135830
+          },
+          {
+            "id": "3",
+            "name": "3. Platform",
+            "ctaText": "Kezdjük el",
+            "currency": "HUF",
+            "features": [
+              "Választható platformok:",
+              "TikTok",
+              "Google",
+              "Meta",
+              "LinkedIn",
+              "Criteo",
+              "Pinterest",
+              "Youtube"
+            ],
+            "isPopular": false,
+            "description": "Három választott platform kezelése",
+            "billingPeriod": "monthly",
+            "originalPrice": null,
+            "discountedPrice": 135830
+          }
+        ],
+        "heading": "Ökoszisztéma építése:",
+        "version": "1.0",
+        "description": "A szolgáltatás ára az alapján változik, hogy mennyi platformot kezelünk. A grafikusi és kampánykezeléssel kapcsolatos munkát teljeskörűen vállaljuk egy összegen belül. Ez azt jelenti, hogy nincs felső értékhatára a kezelt kampányoknak, ezt mindig az határozza meg, hogy mekkora marketing budgettel dolgozunk.",
+        "note1Description": "Az évek alatt az láttuk, hogy azoknak az ügyfeleinknek, akiknek minimum 2 platformot kezelünk jobban fejlődik a cége. Marketingesként jobban tudunk kommunikálni, viszont nem kerül 2x annyi munkába az együttműködés, mint 1 db platform esetén, így kedvezményt tudunk adni a további platformokból.",
+        "note2Description": "A piacon átlagban 5-10% között kérnek el a hirdetési költségből származó jutalékot, de mi a rendszerek építésében látjuk a win-win teremtő helyzetet, nem a jutalékokban."
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 106,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.671Z",
+      "updatedAt": "2025-11-25T01:48:23.671Z"
+    },
+    {
+      "id": "cmidx2nlk000llo6o12mg3p4h",
+      "blockType": "SERVICES_GRID",
+      "name": "BOOM Bónusz Szolgáltatások",
+      "description": "Díjmentes bónusz szolgáltatások felsorolása - Page 9",
+      "brand": "BOOM",
+      "defaultContent": {
+        "email": "a.istvan@boommarketing.hu",
+        "columns": 3,
+        "heading": "Bónuszok:",
+        "version": "1.0",
+        "services": [
+          {
+            "id": "1",
+            "icon": "/icons/setup.svg",
+            "price": "100.000 Ft",
+            "title": "Díjmentes Setup",
+            "priceNote": "Érték",
+            "description": "Díjmentesen átvesszük a fiókot és elvégezzük a szükséges beállításokat"
+          },
+          {
+            "id": "2",
+            "icon": "/icons/audit.svg",
+            "price": "100.000 Ft",
+            "title": "Fiók Audit",
+            "priceNote": "Érték",
+            "description": "Az optimális induláshoz 2-3 évre visszamenőleg megvizsgáljuk az eddigi hirdetésidet"
+          },
+          {
+            "id": "3",
+            "icon": "/icons/strategy.svg",
+            "price": "75.000 Ft",
+            "title": "Stratégiai tervezés",
+            "priceNote": "Érték",
+            "description": "Az induláshoz és a folytatáshoz is folyamatosan friss stratégiát készítünk neked, amit adatokra alapozva tesztelünk"
+          },
+          {
+            "id": "4",
+            "icon": "/icons/reporting.svg",
+            "price": "20.000 Ft",
+            "title": "Havi 1 órás riporting",
+            "priceNote": "Érték",
+            "description": "Nem egy dokumentumot küldünk át e-mailen, hanem a kampánymenedzsereddel közösen kielemzitek az adatokat"
+          },
+          {
+            "id": "5",
+            "icon": "/icons/consultation.svg",
+            "price": "Felbecsülhetetlen",
+            "title": "Teljes vevőszerző rendszerre tett javaslatok",
+            "priceNote": "Érték",
+            "description": "Nem csak a kampányokra, hanem a marketing rendszered összes elemére adunk javaslatot, akkor is, ha csak egy fiókot kezelünk"
+          },
+          {
+            "id": "6",
+            "icon": "/icons/partners.svg",
+            "price": "Lásd a 15. oldalon",
+            "title": "Stratégiai Partnereink által nyújtott bónuszok",
+            "priceNote": "",
+            "description": "Egyes feladatokra megbízható külsősöket javaslunk, kipróbáltuk mindet, kiválóak."
+          }
+        ]
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 107,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.672Z",
+      "updatedAt": "2025-11-25T01:48:23.672Z"
+    },
+    {
+      "id": "cmidx2nll000mlo6otav9mii8",
+      "blockType": "GUARANTEES",
+      "name": "BOOM Garanciák (2-3-4 napos)",
+      "description": "A 2-3-4-es garancia és partneri kapcsolat feltételei - Page 10",
+      "brand": "BOOM",
+      "defaultContent": {
+        "email": "a.istvan@boommarketing.hu",
+        "quote": "\"Ha nem nyitod ki az autót, akkor nem tud dolgozni vele a szerelő.\"",
+        "heading": "Garanciák:",
+        "version": "1.0",
+        "leftColumn": [
+          "2 munkanapon belül reagálunk",
+          "3 munkanap után, ha nem reagál az ügyfél egy fontos kampányokat érintő kérdésre, akkor a válaszig a legjobb szakmai tudásunk szerint visszük azokat",
+          "4 munkanapon belül elvégezzük a kampányokkal kapcsolatban kért módosításokat"
+        ],
+        "subheading": "A 2-3-4-es garancia:",
+        "centerImage": "/images/boom/guarantees-illustration.png",
+        "rightColumn": [
+          "Partneri kapcsolatban működünk a legjobban:",
+          "Kölcsönös tisztelet",
+          "Határidők betartása",
+          "Eszközök rendelkezésre állása",
+          "Tervezünk és nem kapkodunk",
+          "Elmondjuk a szakmai véleményünket",
+          "Mi is szívesen meghallgatjuk az ötleteket"
+        ],
+        "centerContent": {
+          "title": "A csapatunk arra vállal garanciát, ami 100%-ban rajtunk múlik, ez pedig az általunk beletett munka minősége és a folyamatos kapcsolattartás",
+          "description": "A teljes vevőszerző folyamatod fejlesztését úgy garantáljuk, hogy a havi 1 órás riportingon ki fogunk térni erre is."
+        }
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 108,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.673Z",
+      "updatedAt": "2025-11-25T01:48:23.673Z"
+    },
+    {
+      "id": "cmidx2nll000nlo6o9ssfhoy9",
+      "blockType": "PROCESS_TIMELINE",
+      "name": "BOOM Közös Munka Folyamata",
+      "description": "A közös munka kezdetéig vezető út lépései - Page 11",
+      "brand": "BOOM",
+      "defaultContent": {
+        "email": "a.istvan@boommarketing.hu",
+        "steps": [
+          {
+            "id": "1",
+            "title": "2 hetes felkészülés",
+            "subtitle": "Felkészülési időszak",
+            "description": "Szerződéstervezet átküldése → Szerződés megkötése → Hozzáférések megadása → Fiók auditálása"
+          },
+          {
+            "id": "2",
+            "title": "Kampánytervezés-technikai setup",
+            "subtitle": "4 munkanap alatt",
+            "description": "Kick-off meeting → Hirdetések aktiválása és elfogadtatása"
+          },
+          {
+            "id": "3",
+            "title": "Monitorozás és optimalizálás",
+            "subtitle": "Folyamatos munka",
+            "description": "Minden hónapot követően átbeszéljük az eredményeket tartalmazó kimutatásokat és javaslatokat teszünk a teljes vevőszerző folyamat fejlesztésére"
+          }
+        ],
+        "heading": "A közös munka kezdetéig vezető út",
+        "version": "1.0",
+        "subheading": "Hogyan tartjuk magasan a minőséget mozgalmas időszakokban is?",
+        "additionalInfo": [
+          "Legfeljebb heti 2 új projektet vállalunk be, hogy a már bizalmat szavazott ügyfeleink igényeit teljeskörűen tudjuk teljesíteni",
+          "A BOOM kapui évi 11 hónapig nyitottak az új ügyfeleknek, mert decembereben csak a meglévő ügyfeleink kampányait kezeljük"
+        ]
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 109,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.674Z",
+      "updatedAt": "2025-11-25T01:48:23.674Z"
+    },
+    {
+      "id": "cmidx2nlm000olo6otm65buvi",
+      "blockType": "PROCESS_TIMELINE",
+      "name": "BOOM Első 4 Hónap Ütemterve",
+      "description": "Hónapról hónapra bontott fejlődési ütemterv - Page 12",
+      "brand": "BOOM",
+      "defaultContent": {
+        "email": "a.istvan@boommarketing.hu",
+        "steps": [
+          {
+            "id": "1",
+            "title": "1. hónap:",
+            "subtitle": "Felkészülés és technikai beállítások",
+            "description": "Technikai finomhangolások, Összeszokik a csapat, Adatgyűjtés, Tesztelés"
+          },
+          {
+            "id": "2",
+            "title": "2. hónap:",
+            "subtitle": "Optimalizálás kezdete",
+            "description": "Adatgyűjtés, Optimalizálás, Még több tesztelés"
+          },
+          {
+            "id": "3",
+            "title": "3. hónap:",
+            "subtitle": "Skálázás indítása",
+            "description": "Kezdődik a skálázás, Tovább optimalizálunk, Még mindig tesztelünk, És adatokat gyűjtünk"
+          },
+          {
+            "id": "4",
+            "title": "4. hónap:",
+            "subtitle": "Bővítés és újabb elemek",
+            "description": "Adatgyűjtés, Visszamérés, Elemzés, Ötletelés, Optimalizálás, Új elem bevonása a Marketing Ökoszisztémádba"
+          }
+        ],
+        "heading": "Az első 4 hónap részletes ütemterve",
+        "version": "1.0",
+        "centerImage": "/images/boom/timeline-illustration.png"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 110,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.675Z",
+      "updatedAt": "2025-11-25T01:48:23.675Z"
+    },
+    {
+      "id": "cmidx2nln000plo6owgftbdcm",
+      "blockType": "SERVICES_GRID",
+      "name": "BOOM További Szolgáltatások",
+      "description": "Mi mindenben tudunk még segíteni - Page 13",
+      "brand": "BOOM",
+      "defaultContent": {
+        "email": "a.istvan@boommarketing.hu",
+        "columns": 3,
+        "heading": "Mi mindenben tudunk még segíteni?",
+        "version": "1.0",
+        "services": [
+          {
+            "id": "1",
+            "icon": "/icons/email-marketing.svg",
+            "price": "Egyedi árajánlat",
+            "title": "E-mail Marketing Rendszer",
+            "description": "Automatizált e-mail kampányok tervezése és kivitelezése"
+          },
+          {
+            "id": "2",
+            "icon": "/icons/copywriting.svg",
+            "price": "Egyedi árajánlat",
+            "title": "Copywriting",
+            "description": "Konverzióra optimalizált szövegírás minden felületre"
+          },
+          {
+            "id": "3",
+            "icon": "/icons/landing-page.svg",
+            "price": "Egyedi árajánlat",
+            "title": "Landing, sales oldalak",
+            "description": "Eladásra optimalizált landing és értékesítési oldalak"
+          },
+          {
+            "id": "4",
+            "icon": "/icons/audit-full.svg",
+            "price": "Egyedi árajánlat",
+            "title": "Teljes vevőszerző Audit",
+            "description": "Átfogó elemzés a teljes értékesítési folyamatról"
+          },
+          {
+            "id": "5",
+            "icon": "/icons/social-media.svg",
+            "price": "Egyedi árajánlat",
+            "title": "Social media",
+            "description": "Közösségi média jelenléted teljes körű kezelése"
+          }
+        ]
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 111,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.676Z",
+      "updatedAt": "2025-11-25T01:48:23.676Z"
+    },
+    {
+      "id": "cmidx2nlo000qlo6ozzfbqr7i",
+      "blockType": "CLIENT_LOGOS",
+      "name": "BOOM Partnereink",
+      "description": "Velük már volt szerencsénk együtt dolgozni - Page 14",
+      "brand": "BOOM",
+      "defaultContent": {
+        "email": "a.istvan@boommarketing.hu",
+        "logos": [
+          {
+            "id": "1",
+            "alt": "Bee Well",
+            "url": "/logos/clients/beewell.png"
+          },
+          {
+            "id": "2",
+            "alt": "Best Lashes Professional",
+            "url": "/logos/clients/best-lashes.png"
+          },
+          {
+            "id": "3",
+            "alt": "Biobubi",
+            "url": "/logos/clients/biobubi.png"
+          },
+          {
+            "id": "4",
+            "alt": "bestmarkt",
+            "url": "/logos/clients/bestmarkt.png"
+          },
+          {
+            "id": "5",
+            "alt": "cegespolo.eu",
+            "url": "/logos/clients/cegespolo.png"
+          },
+          {
+            "id": "6",
+            "alt": "Coconutoil Cosmetics",
+            "url": "/logos/clients/coconutoil.png"
+          },
+          {
+            "id": "7",
+            "alt": "dbh InnoHub",
+            "url": "/logos/clients/dbh-innohub.png"
+          },
+          {
+            "id": "8",
+            "alt": "Easy Business by EY",
+            "url": "/logos/clients/easy-business.png"
+          },
+          {
+            "id": "9",
+            "alt": "Duna Elektronika 30 years",
+            "url": "/logos/clients/duna-elektronika.png"
+          },
+          {
+            "id": "10",
+            "alt": "Neverland",
+            "url": "/logos/clients/neverland.png"
+          },
+          {
+            "id": "11",
+            "alt": "PetChef Love Longer",
+            "url": "/logos/clients/petchef.png"
+          },
+          {
+            "id": "12",
+            "alt": "Menedzser Praxis",
+            "url": "/logos/clients/menedzser-praxis.png"
+          },
+          {
+            "id": "13",
+            "alt": "Plazma Centrum",
+            "url": "/logos/clients/plazma-centrum.png"
+          },
+          {
+            "id": "14",
+            "alt": "ProGastro",
+            "url": "/logos/clients/progastro.png"
+          },
+          {
+            "id": "15",
+            "alt": "Pongor Group",
+            "url": "/logos/clients/pongor-group.png"
+          },
+          {
+            "id": "16",
+            "alt": "WP Kurzus",
+            "url": "/logos/clients/wp-kurzus.png"
+          },
+          {
+            "id": "17",
+            "alt": "zyntern",
+            "url": "/logos/clients/zyntern.png"
+          }
+        ],
+        "columns": 4,
+        "heading": "Velük már volt szerencsénk együtt dolgozni",
+        "version": "1.0"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 112,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.677Z",
+      "updatedAt": "2025-11-25T01:48:23.677Z"
+    },
+    {
+      "id": "cmidx2nlp000rlo6ot18a52xk",
+      "blockType": "SERVICES_GRID",
+      "name": "BOOM Ajánlott Partnerek Kuponfüzet",
+      "description": "Őket ajánljuk - BOOM marketing kuponfüzet - Page 15",
+      "brand": "BOOM",
+      "defaultContent": {
+        "note": "SÁPI DOMÁN",
+        "email": "a.istvan@boommarketing.hu",
+        "columns": 3,
+        "heading": "Őket ajánljuk!",
+        "version": "1.0",
+        "services": [
+          {
+            "id": "1",
+            "icon": "/logos/partners/wpviking.png",
+            "price": "Kupon elérhető",
+            "title": "WP Viking Agency",
+            "description": "WordPress fejlesztés és karbantartás"
+          },
+          {
+            "id": "2",
+            "icon": "/logos/partners/praxis-weben.png",
+            "price": "Kupon elérhető",
+            "title": "Praxis Weben",
+            "description": "Weboldalak és webshopok készítése"
+          },
+          {
+            "id": "3",
+            "icon": "/logos/partners/bp-digital.png",
+            "price": "Kupon elérhető",
+            "title": "BP Digital",
+            "description": "Digitális marketing megoldások"
+          },
+          {
+            "id": "4",
+            "icon": "/logos/partners/everigo.png",
+            "price": "Kupon elérhető",
+            "title": "Everigo International Group",
+            "description": "Nemzetközi üzleti tanácsadás"
+          },
+          {
+            "id": "5",
+            "icon": "/logos/partners/sapi-doman.png",
+            "price": "Kupon elérhető",
+            "title": "Sápi Domán",
+            "description": "Üzleti fotózás és branding"
+          }
+        ],
+        "subheading": "BOOM marketing kuponfüzet"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 113,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.678Z",
+      "updatedAt": "2025-11-25T01:48:23.678Z"
+    },
+    {
+      "id": "cmidx2nlq000slo6ouw85uf55",
+      "blockType": "CTA",
+      "name": "BOOM Multi-Platform Előnyök CTA",
+      "description": "Miért éri meg más platformokat is kipróbálni - Záró CTA - Page 16",
+      "brand": "BOOM",
+      "defaultContent": {
+        "email": "a.istvan@boommarketing.hu",
+        "heading": "Miért éri meg más platformokat is kipróbálni?",
+        "version": "1.0",
+        "primaryCta": {
+          "url": "mailto:a.istvan@boommarketing.hu",
+          "text": "Egyeztessünk"
+        },
+        "description": "Fedezd fel a Marketing Ökoszisztéma előnyeit több platformon keresztül. Segítünk kiépíteni egy olyan rendszert, ahol az elemek egymást erősítve működnek.",
+        "secondaryCta": {
+          "url": "tel:+36301234567",
+          "text": "Hívj fel most"
+        },
+        "backgroundColor": "#fa604a",
+        "backgroundImage": "/images/boom/cta-bg.jpg"
+      },
+      "thumbnailUrl": null,
+      "displayOrder": 114,
+      "isActive": true,
+      "usageCount": 0,
+      "createdAt": "2025-11-25T01:48:23.678Z",
+      "updatedAt": "2025-11-25T01:48:23.678Z"
+    }
+  ],
+  "users": [
+    {
+      "id": "cmidx2nkz0001lo6on00rcoss",
+      "email": "admin@aiboost.hu",
+      "passwordHash": "$2b$10$cjkaqwQqWOWGX2tFMXS4FuXS5HgXiR2RSRfVDd9ViwGoH2bm.EtJu",
+      "name": "AiBoost Admin",
+      "role": "ADMIN",
+      "isActive": true,
+      "lastLoginAt": null,
+      "createdAt": "2025-11-25T01:48:23.651Z",
+      "updatedAt": "2025-11-25T01:48:23.651Z"
+    },
+    {
+      "id": "cmidx2nku0000lo6o1wu4ddl7",
+      "email": "admin@boommarketing.hu",
+      "passwordHash": "$2b$10$cjkaqwQqWOWGX2tFMXS4FuXS5HgXiR2RSRfVDd9ViwGoH2bm.EtJu",
+      "name": "Boom Admin",
+      "role": "SUPER_ADMIN",
+      "isActive": true,
+      "lastLoginAt": "2025-11-25T01:52:44.238Z",
+      "createdAt": "2025-11-25T01:48:23.646Z",
+      "updatedAt": "2025-11-25T01:52:44.239Z"
+    }
+  ]
+}
