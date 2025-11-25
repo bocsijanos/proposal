@@ -4,26 +4,11 @@ const PRODUCTION_URL = 'https://proposal-builder.vercel.app';
 const prisma = new PrismaClient();
 
 async function syncToProduction() {
-  console.log('🚀 Starting production sync...\n');
+  console.log('🚀 Starting production data sync...\n');
 
   try {
-    // Step 1: Run migration
-    console.log('📊 Step 1: Running database migration on production...');
-    const migrateResponse = await fetch(`${PRODUCTION_URL}/api/migrate-db`, {
-      method: 'POST',
-    });
-
-    if (!migrateResponse.ok) {
-      const error = await migrateResponse.text();
-      throw new Error(`Migration failed: ${error}`);
-    }
-
-    const migrateResult = await migrateResponse.json();
-    console.log('✅ Migration completed:', migrateResult.message);
-    console.log(`   Executed ${migrateResult.statementsExecuted} SQL statements\n`);
-
-    // Step 2: Export local data directly from database
-    console.log('📤 Step 2: Exporting data from local database...');
+    // Step 1: Export local data directly from database
+    console.log('📤 Step 1: Exporting data from local database...');
 
     const users = await prisma.user.findMany({
       select: {
@@ -62,8 +47,8 @@ async function syncToProduction() {
     console.log(`   Templates: ${blockTemplates.length}`);
     console.log(`   Proposals: ${proposals.length}\n`);
 
-    // Step 3: Import to production
-    console.log('📥 Step 3: Importing data to production...');
+    // Step 2: Import to production
+    console.log('📥 Step 2: Importing data to production...');
     const importResponse = await fetch(`${PRODUCTION_URL}/api/import-data`, {
       method: 'POST',
       headers: {
