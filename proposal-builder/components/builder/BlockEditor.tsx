@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { BlockRenderer } from '@/components/builder/BlockRenderer';
 
@@ -26,23 +26,35 @@ const AVAILABLE_FIELDS = [
 ];
 
 export function BlockEditor({ block, onSave, onCancel, allowBrandChange = false }: BlockEditorProps) {
-  const [content, setContent] = useState(JSON.stringify(block.content, null, 2));
+  // Initialize with the exact content from block prop
+  const initialContent = useMemo(() => JSON.stringify(block.content, null, 2), [block.id]);
+
+  const [content, setContent] = useState(initialContent);
   const [brand, setBrand] = useState<'BOOM' | 'AIBOOST'>(block.brand || 'BOOM');
   const [error, setError] = useState('');
   const [showFields, setShowFields] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Update content when block changes (e.g., switching between templates)
+  // Update content when block ID changes (switching templates)
   useEffect(() => {
-    setContent(JSON.stringify(block.content, null, 2));
+    console.log('BlockEditor: Block changed', {
+      blockId: block.id,
+      blockType: block.blockType,
+      contentKeys: Object.keys(block.content),
+      sampleContent: JSON.stringify(block.content).substring(0, 100)
+    });
+
+    const newContent = JSON.stringify(block.content, null, 2);
+    setContent(newContent);
     setBrand(block.brand || 'BOOM');
     setError('');
-  }, [block.id, block.content, block.brand]);
+  }, [block.id]);
 
   const handleSave = () => {
     try {
       const parsed = JSON.parse(content);
       setError('');
+      console.log('Saving content:', parsed);
       onSave(parsed, allowBrandChange ? brand : undefined);
     } catch (e) {
       setError('Hibás JSON formátum! Kérlek ellenőrizd a szintaxist.');
@@ -70,14 +82,16 @@ export function BlockEditor({ block, onSave, onCancel, allowBrandChange = false 
   };
 
   // Parse JSON for live preview (with error handling)
-  let parsedContent;
-  let parseError = false;
-  try {
-    parsedContent = JSON.parse(content);
-  } catch (e) {
-    parseError = true;
-    parsedContent = block.content; // Fallback to original content
-  }
+  const { parsedContent, parseError } = useMemo(() => {
+    try {
+      const parsed = JSON.parse(content);
+      console.log('Parsed content for preview:', parsed);
+      return { parsedContent: parsed, parseError: false };
+    } catch (e) {
+      console.log('Parse error, using fallback');
+      return { parsedContent: block.content, parseError: true };
+    }
+  }, [content, block.content]);
 
   return (
     <div className="mt-4 bg-gray-50 rounded-lg border border-gray-200">
