@@ -38,6 +38,7 @@ interface SortableTemplateItemProps {
   template: BlockTemplate;
   editingId: string | null;
   viewMode: 'preview' | 'compact';
+  isDeleting: boolean;
   onEdit: (id: string) => void;
   onToggleActive: (id: string, currentState: boolean) => void;
   onSave: (id: string, newContent: any, newBrand?: 'BOOM' | 'AIBOOST') => void;
@@ -49,6 +50,7 @@ function SortableTemplateItem({
   template,
   editingId,
   viewMode,
+  isDeleting,
   onEdit,
   onToggleActive,
   onSave,
@@ -66,15 +68,22 @@ function SortableTemplateItem({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+    transition: isDeleting
+      ? 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.3s ease-out 0.3s, margin 0.3s ease-out 0.3s, padding 0.3s ease-out 0.3s, opacity 0.15s ease-out'
+      : transition,
+    opacity: isDragging ? 0.5 : (isDeleting ? 0 : 1),
+    maxHeight: isDeleting ? '0' : '5000px',
+    marginBottom: isDeleting ? '0' : undefined,
+    paddingTop: isDeleting ? '0' : undefined,
+    paddingBottom: isDeleting ? '0' : undefined,
+    overflow: isDeleting ? 'hidden' : 'visible',
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="relative group"
+      className="relative group transition-all"
     >
       {/* Drag Handle and Delete Button */}
       <div className="absolute -left-12 top-6 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
@@ -193,6 +202,7 @@ export default function TemplatesPage() {
   const [viewMode, setViewMode] = useState<'preview' | 'compact'>('preview');
   const [selectedBrand, setSelectedBrand] = useState<'BOOM' | 'AIBOOST'>('BOOM');
   const [showFieldsDropdown, setShowFieldsDropdown] = useState(false);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -276,19 +286,43 @@ export default function TemplatesPage() {
   };
 
   const handleDelete = async (templateId: string) => {
-    try {
-      const response = await fetch(`/api/block-templates/${templateId}`, {
-        method: 'DELETE',
-      });
+    // Start delete animation
+    setDeletingIds(prev => new Set(prev).add(templateId));
 
-      if (response.ok) {
-        await fetchTemplates();
-      } else {
-        console.error('Failed to delete template');
+    // Wait for slide-out animation (300ms) + collapse animation (300ms)
+    setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/block-templates/${templateId}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          await fetchTemplates();
+          // Remove from deletingIds after fetch completes
+          setDeletingIds(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(templateId);
+            return newSet;
+          });
+        } else {
+          console.error('Failed to delete template');
+          // Revert animation on error
+          setDeletingIds(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(templateId);
+            return newSet;
+          });
+        }
+      } catch (error) {
+        console.error('Error deleting template:', error);
+        // Revert animation on error
+        setDeletingIds(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(templateId);
+          return newSet;
+        });
       }
-    } catch (error) {
-      console.error('Error deleting template:', error);
-    }
+    }, 600); // Total animation time: 300ms slide + 300ms collapse
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -437,6 +471,7 @@ export default function TemplatesPage() {
                   template={template}
                   editingId={editingId}
                   viewMode={viewMode}
+                  isDeleting={deletingIds.has(template.id)}
                   onEdit={handleEdit}
                   onToggleActive={handleToggleActive}
                   onSave={handleSave}
