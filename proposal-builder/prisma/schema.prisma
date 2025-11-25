@@ -307,3 +307,52 @@ model ProposalView {
   @@index([viewedAt(sort: Desc)])
   @@map("proposal_views")
 }
+
+// ============================================================================
+// COMPONENT SOURCE MANAGEMENT
+// ============================================================================
+
+/// Master component source - one per block type
+/// This stores the canonical version of each component's code
+model ComponentSource {
+  id              String    @id @default(cuid())
+  blockType       BlockType @unique @map("block_type")
+  name            String
+  description     String?
+  sourceCode      String    @db.Text @map("source_code")
+  compiledCode    String    @db.Text @map("compiled_code")
+  schema          Json
+  version         Int       @default(1)
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  lastCompiledAt  DateTime? @map("last_compiled_at")
+
+  versions        ComponentVersion[]
+
+  @@index([blockType])
+  @@index([isActive])
+  @@index([updatedAt(sort: Desc)])
+  @@map("component_sources")
+}
+
+/// Version history for components
+model ComponentVersion {
+  id                String    @id @default(cuid())
+  componentId       String    @map("component_id")
+  component         ComponentSource @relation(fields: [componentId], references: [id], onDelete: Cascade)
+
+  versionNumber     Int       @map("version_number")
+  changeDescription String?   @map("change_description")
+  sourceCode        String    @db.Text @map("source_code")
+  compiledCode      String    @db.Text @map("compiled_code")
+  schema            Json
+
+  createdById       String    @map("created_by_id")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@unique([componentId, versionNumber])
+  @@index([componentId, versionNumber(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@map("component_versions")
+}
