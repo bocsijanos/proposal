@@ -43,7 +43,7 @@ async function main() {
       brand: Brand.BOOM,
       defaultContent: {
         version: '1.0',
-        heading: 'Árajánlat 2025',
+        heading: 'Árajánlat {{clientName}} részére',
         subheading: 'Modern marketing megoldások vállalkozásoknak',
         backgroundImage: '/images/hero-bg.jpg',
         ctaText: 'Kezdjünk neki',
