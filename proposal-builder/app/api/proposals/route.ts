@@ -135,29 +135,40 @@ export async function POST(request: NextRequest) {
     });
 
     // Load all component sources to copy to proposal
+    console.log('[Proposal Creation] Loading ComponentSources...');
     const componentSources = await prisma.componentSource.findMany({
       where: {
         isActive: true,
       },
     });
+    console.log(`[Proposal Creation] Found ${componentSources.length} ComponentSources`);
 
     // Create ProposalComponentCode entries for each block type
     const componentCodeMap = new Map<string, string>();
 
+    console.log('[Proposal Creation] Creating ProposalComponentCode entries...');
     for (const source of componentSources) {
-      const proposalComponentCode = await prisma.proposalComponentCode.create({
-        data: {
-          proposalId: proposal.id,
-          blockType: source.blockType,
-          sourceCode: source.sourceCode,
-          compiledCode: source.compiledCode,
-          schema: source.schema as any, // JsonValue from DB is compatible with InputJsonValue
-          sourceVersion: source.version,
-          isCustomized: false,
-        },
-      });
-      componentCodeMap.set(source.blockType, proposalComponentCode.id);
+      try {
+        console.log(`[Proposal Creation] Creating entry for ${source.blockType}`);
+        const proposalComponentCode = await prisma.proposalComponentCode.create({
+          data: {
+            proposalId: proposal.id,
+            blockType: source.blockType,
+            sourceCode: source.sourceCode,
+            compiledCode: source.compiledCode,
+            schema: source.schema as any, // JsonValue from DB is compatible with InputJsonValue
+            sourceVersion: source.version,
+            isCustomized: false,
+          },
+        });
+        componentCodeMap.set(source.blockType, proposalComponentCode.id);
+        console.log(`[Proposal Creation] ✓ Created ProposalComponentCode for ${source.blockType}`);
+      } catch (compError) {
+        console.error(`[Proposal Creation] ERROR creating ProposalComponentCode for ${source.blockType}:`, compError);
+        throw compError;
+      }
     }
+    console.log(`[Proposal Creation] Created ${componentCodeMap.size} ProposalComponentCode entries`);
 
     let defaultBlocks;
 
@@ -503,12 +514,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Create blocks for the proposal
-    await prisma.proposalBlock.createMany({
-      data: defaultBlocks.map(block => ({
-        ...block,
-        proposalId: proposal.id,
-      })),
-    });
+    console.log(`[Proposal Creation] Creating ${defaultBlocks.length} blocks...`);
+    try {
+      await prisma.proposalBlock.createMany({
+        data: defaultBlocks.map(block => ({
+          ...block,
+          proposalId: proposal.id,
+        })),
+      });
+      console.log('[Proposal Creation] ✓ Blocks created successfully');
+    } catch (blockError) {
+      console.error('[Proposal Creation] ERROR creating blocks:', blockError);
+      throw blockError;
+    }
 
     // Fetch the complete proposal with blocks
     const completeProposal = await prisma.proposal.findUnique({
@@ -522,11 +540,19 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log(`[Proposal Creation] ✓ Proposal created successfully with ${completeProposal?.blocks.length || 0} blocks`);
     return NextResponse.json(completeProposal, { status: 201 });
   } catch (error) {
-    console.error('Error creating proposal:', error);
+    console.error('[Proposal Creation] FATAL ERROR:', error);
+    console.error('[Proposal Creation] Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return NextResponse.json(
-      { error: 'Failed to create proposal' },
+      {
+        error: 'Failed to create proposal',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
