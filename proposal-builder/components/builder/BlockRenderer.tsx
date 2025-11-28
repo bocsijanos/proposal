@@ -23,6 +23,11 @@ interface BlockRendererProps {
     clientEmail?: string | null;
     clientPhone?: string | null;
     clientContactName?: string | null;
+    // Admin fields
+    adminName?: string | null;
+    adminEmail?: string | null;
+    adminPhone?: string | null;
+    adminAvatar?: string | null;
   };
 }
 

@@ -204,6 +204,11 @@ export default async function ProposalPage({ params }: PageProps) {
                       clientPhone: proposal.clientPhone,
                       clientContactName: proposal.clientContactName,
                       createdByName: proposal.createdByName || proposal.createdBy?.name,
+                      // Admin data
+                      adminName: proposal.createdBy?.name,
+                      adminEmail: proposal.createdBy?.email,
+                      adminPhone: proposal.createdBy?.phone,
+                      adminAvatar: proposal.createdBy?.avatarUrl,
                     }}
                   />
                 )}
