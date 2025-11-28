@@ -199,17 +199,10 @@ export default async function ProposalPage({ params }: PageProps) {
                     block={block}
                     brand={proposal.brand}
                     proposalData={{
-                      // Client data
                       clientName: proposal.clientName,
                       clientEmail: proposal.clientEmail,
                       clientPhone: proposal.clientPhone,
                       clientContactName: proposal.clientContactName,
-                      // Admin data
-                      adminName: proposal.createdBy?.name,
-                      adminEmail: proposal.createdBy?.email,
-                      adminPhone: proposal.createdBy?.phone,
-                      adminAvatar: proposal.createdBy?.avatarUrl,
-                      // Legacy
                       createdByName: proposal.createdByName || proposal.createdBy?.name,
                     }}
                   />
@@ -221,7 +214,7 @@ export default async function ProposalPage({ params }: PageProps) {
       </main>
 
       {/* Table of Contents - csak nagy képernyőkön */}
-      <TableOfContents blocks={proposal.blocks} />
+      <TableOfContents blocks={proposal.blocks as any} />
 
       {/* Footer */}
       <footer className="bg-[var(--color-background)] text-white py-12 mt-16">
