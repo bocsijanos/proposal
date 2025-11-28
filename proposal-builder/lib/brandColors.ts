@@ -3,7 +3,12 @@
  *
  * This utility provides centralized color management for different brands,
  * ensuring consistent styling across all block components.
+ *
+ * NOW USES DESIGN TOKENS - automatically loads the correct brand tokens
  */
+
+import { boomTokens } from './design-tokens/boom-tokens';
+import { aiboostTokens } from './design-tokens/aiboost-tokens';
 
 export type BrandType = 'BOOM' | 'AIBOOST';
 
@@ -16,37 +21,37 @@ export interface BrandColors {
 }
 
 /**
- * Get brand-specific colors
+ * Get brand-specific colors from design tokens
  *
- * BOOM: Uses explicit hex colors for headings and text
- * - Heading Primary: Orange (#fa604a)
- * - Heading Secondary: Blue (#3e4581)
- * - Text Color: Blue (#3e4581)
+ * BOOM: Uses BOOM design tokens
+ * - Primary: #fa604a (Orange)
+ * - Secondary: #3e4581 (Navy)
  *
- * AIBOOST: Uses CSS variables for dynamic theming
- * - All colors use var(--color-*) CSS variables
+ * AIBOOST: Uses AIBOOST design tokens
+ * - Primary: #D187FC (Purple)
+ * - Secondary: #1F1F41 (Dark Navy)
  *
  * @param brand - The brand type ('BOOM' or 'AIBOOST')
- * @returns BrandColors object with all color values
+ * @returns BrandColors object with all color values from design tokens
  */
 export function getBrandColors(brand: BrandType): BrandColors {
   if (brand === 'BOOM') {
     return {
-      primary: '#fa604a',        // Orange (CTA buttons, accents)
-      secondary: '#3e4581',      // Blue (secondary elements)
-      headingPrimary: '#fa604a', // Main headings (h2) - Orange
-      headingSecondary: '#3e4581', // Sub-headings (h3) - Blue
-      textColor: '#3e4581',      // Body text, lists, paragraphs - Blue
+      primary: boomTokens.colors.primary.hex,
+      secondary: boomTokens.colors.secondary.hex,
+      headingPrimary: boomTokens.colors.primary.hex,
+      headingSecondary: boomTokens.colors.secondary.hex,
+      textColor: boomTokens.colors.secondary.hex,
     };
   }
 
-  // AIBOOST and default fallback
+  // AIBOOST
   return {
-    primary: 'var(--color-primary)',
-    secondary: 'var(--color-secondary)',
-    headingPrimary: 'var(--color-text)',
-    headingSecondary: 'var(--color-text)',
-    textColor: 'var(--color-text)',
+    primary: aiboostTokens.colors.primary.hex,
+    secondary: aiboostTokens.colors.secondary.hex,
+    headingPrimary: aiboostTokens.colors.primary.hex,
+    headingSecondary: aiboostTokens.colors.secondary.hex,
+    textColor: aiboostTokens.colors.text.primary.hex,
   };
 }
 

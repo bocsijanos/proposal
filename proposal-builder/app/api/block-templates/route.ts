@@ -24,20 +24,7 @@ export async function GET(request: NextRequest) {
       ],
     });
 
-    // Check which block types have ComponentSource (new system)
-    const componentSources = await prisma.componentSource.findMany({
-      select: { blockType: true },
-    });
-
-    const hasComponentSource = new Set(componentSources.map(cs => cs.blockType));
-
-    // Add hasComponentSource flag to each template
-    const enrichedTemplates = templates.map(template => ({
-      ...template,
-      hasComponentSource: hasComponentSource.has(template.blockType),
-    }));
-
-    return NextResponse.json(enrichedTemplates);
+    return NextResponse.json(templates);
   } catch (error) {
     console.error('Error fetching block templates:', error);
     return NextResponse.json(
@@ -47,7 +34,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/block-templates - Create or update default templates
+// POST /api/block-templates - Create a new template
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -57,51 +44,42 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { templates } = body;
+    const { name, description, defaultContent, brand } = body;
 
-    if (!templates || !Array.isArray(templates)) {
+    if (!name) {
       return NextResponse.json(
-        { error: 'Templates array is required' },
+        { error: 'name is required' },
         { status: 400 }
       );
     }
 
-    // Upsert all templates
-    const results = await Promise.all(
-      templates.map((template: any) =>
-        prisma.blockTemplate.upsert({
-          where: {
-            blockType_name_brand: {
-              blockType: template.blockType,
-              name: template.name || 'Default',
-              brand: template.brand || 'BOOM',
-            },
-          },
-          update: {
-            defaultContent: template.defaultContent,
-            description: template.description,
-            isActive: template.isActive ?? true,
-            displayOrder: template.displayOrder ?? 0,
-            brand: template.brand || 'BOOM',
-          },
-          create: {
-            blockType: template.blockType,
-            name: template.name || 'Default',
-            description: template.description,
-            defaultContent: template.defaultContent,
-            isActive: template.isActive ?? true,
-            displayOrder: template.displayOrder ?? 0,
-            brand: template.brand || 'BOOM',
-          },
-        })
-      )
-    );
+    // Get highest displayOrder for this brand
+    const lastTemplate = await prisma.blockTemplate.findFirst({
+      where: { brand: brand || 'BOOM' },
+      orderBy: { displayOrder: 'desc' },
+      select: { displayOrder: true },
+    });
 
-    return NextResponse.json({ success: true, count: results.length });
+    const newDisplayOrder = (lastTemplate?.displayOrder ?? -1) + 1;
+
+    // All templates are now PUCK_CONTENT type
+    const newTemplate = await prisma.blockTemplate.create({
+      data: {
+        blockType: 'PUCK_CONTENT',
+        name,
+        description: description || null,
+        defaultContent: defaultContent || { puckData: { content: [], root: { props: {} } } },
+        brand: brand || 'BOOM',
+        isActive: true,
+        displayOrder: newDisplayOrder,
+      },
+    });
+
+    return NextResponse.json(newTemplate, { status: 201 });
   } catch (error) {
-    console.error('Error creating/updating templates:', error);
+    console.error('Error creating template:', error);
     return NextResponse.json(
-      { error: 'Failed to create/update templates' },
+      { error: 'Failed to create template' },
       { status: 500 }
     );
   }

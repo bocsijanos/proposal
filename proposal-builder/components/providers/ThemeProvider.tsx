@@ -1,39 +1,50 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { ThemeType, applyTheme } from '@/lib/themes';
+import { applyTheme } from '@/lib/themes';
+import { Brand, brandToThemeKey, isBrand } from '@/lib/types/brand';
+
+// Re-export Brand type for consumers
+export type { Brand } from '@/lib/types/brand';
 
 interface ThemeContextType {
-  theme: ThemeType;
-  setTheme: (theme: ThemeType) => void;
+  theme: Brand;
+  setTheme: (theme: Brand) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 interface ThemeProviderProps {
   children: ReactNode;
-  defaultTheme?: ThemeType;
+  defaultTheme?: Brand;
 }
 
-export function ThemeProvider({ children, defaultTheme = 'boom' }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<ThemeType>(defaultTheme);
+export function ThemeProvider({ children, defaultTheme = 'BOOM' }: ThemeProviderProps) {
+  const [theme, setThemeState] = useState<Brand>(defaultTheme);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Load theme from localStorage
-    const savedTheme = localStorage.getItem('proposal-theme') as ThemeType;
-    if (savedTheme && (savedTheme === 'boom' || savedTheme === 'aiboost')) {
-      setThemeState(savedTheme);
-      applyTheme(savedTheme);
+    // Load theme from localStorage (convert from old format if needed)
+    const savedTheme = localStorage.getItem('proposal-theme');
+    if (savedTheme) {
+      // Handle both old lowercase and new uppercase formats
+      const normalizedTheme = savedTheme.toUpperCase();
+      if (isBrand(normalizedTheme)) {
+        setThemeState(normalizedTheme);
+        applyTheme(brandToThemeKey(normalizedTheme));
+      } else {
+        applyTheme(brandToThemeKey(defaultTheme));
+      }
     } else {
-      applyTheme(defaultTheme);
+      applyTheme(brandToThemeKey(defaultTheme));
     }
   }, [defaultTheme]);
 
-  const setTheme = (newTheme: ThemeType) => {
+  const setTheme = (newTheme: Brand) => {
     setThemeState(newTheme);
-    applyTheme(newTheme);
+    applyTheme(brandToThemeKey(newTheme));
+    // Save as uppercase (canonical format)
     localStorage.setItem('proposal-theme', newTheme);
 
     // Add transition class

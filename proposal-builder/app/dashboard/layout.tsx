@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/providers/ThemeProvider';
@@ -15,7 +15,11 @@ export default function DashboardLayout({
 }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const pathname = usePathname();
   const { theme, setTheme } = useTheme();
+
+  // Check if we're on an editor page (full-screen mode)
+  const isEditorPage = pathname?.includes('/edit');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -40,12 +44,17 @@ export default function DashboardLayout({
   }
 
   const handleThemeToggle = () => {
-    setTheme(theme === 'boom' ? 'aiboost' : 'boom');
+    setTheme(theme === 'BOOM' ? 'AIBOOST' : 'BOOM');
   };
 
   const handleLogout = async () => {
     await signOut({ redirect: true, callbackUrl: '/login' });
   };
+
+  // For editor pages, render only children without header/wrapper
+  if (isEditorPage) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-[var(--color-background-alt)]">
@@ -56,8 +65,8 @@ export default function DashboardLayout({
             {/* Logo & Title */}
             <div className="flex items-center gap-4">
               <Image
-                src={theme === 'boom' ? '/logos/boom.svg' : '/logos/aiboost.svg'}
-                alt={theme === 'boom' ? 'Boom Marketing' : 'AiBoost'}
+                src={theme === 'BOOM' ? '/logos/boom.svg' : '/logos/aiboost.svg'}
+                alt={theme === 'BOOM' ? 'Boom Marketing' : 'AiBoost'}
                 width={120}
                 height={120}
                 style={{ width: '120px', height: 'auto' }}
@@ -67,7 +76,7 @@ export default function DashboardLayout({
                   Proposal Builder
                 </h1>
                 <p className="text-xs text-[var(--color-muted)]">
-                  {theme === 'boom' ? 'Boom Marketing' : 'AiBoost'}
+                  {theme === 'BOOM' ? 'Boom Marketing' : 'AiBoost'}
                 </p>
               </div>
             </div>
@@ -86,6 +95,18 @@ export default function DashboardLayout({
               >
                 Sablonok
               </Link>
+              <Link
+                href="/brand-book"
+                className="text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors"
+              >
+                Brand Book
+              </Link>
+              <Link
+                href="/dashboard/settings"
+                className="text-sm font-medium text-[var(--color-text)] hover:text-[var(--color-primary)] transition-colors"
+              >
+                Beállítások
+              </Link>
             </nav>
 
             {/* Actions */}
@@ -94,11 +115,11 @@ export default function DashboardLayout({
               <button
                 onClick={handleThemeToggle}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-[var(--color-border)] hover:bg-[var(--color-background-alt)] transition-colors"
-                title={`Váltás ${theme === 'boom' ? 'AiBoost' : 'Boom Marketing'}-ra`}
+                title={`Váltás ${theme === 'BOOM' ? 'AiBoost' : 'Boom Marketing'}-ra`}
               >
                 <Image
-                  src={theme === 'boom' ? '/logos/aiboost.svg' : '/logos/boom.svg'}
-                  alt={theme === 'boom' ? 'AiBoost' : 'Boom Marketing'}
+                  src={theme === 'BOOM' ? '/logos/aiboost.svg' : '/logos/boom.svg'}
+                  alt={theme === 'BOOM' ? 'AiBoost' : 'Boom Marketing'}
                   width={60}
                   height={60}
                   style={{ width: '60px', height: 'auto' }}
@@ -107,6 +128,18 @@ export default function DashboardLayout({
 
               {/* User Menu */}
               <div className="flex items-center gap-3 pl-3 border-l border-[var(--color-border)]">
+                {/* User Avatar */}
+                {session.user?.avatarUrl ? (
+                  <img
+                    src={session.user.avatarUrl}
+                    alt={session.user.name || 'Avatar'}
+                    className="w-9 h-9 rounded-full object-cover border-2 border-[var(--color-border)]"
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white font-medium text-sm">
+                    {(session.user?.name || session.user?.email || '?').charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <div className="text-right hidden sm:block">
                   <p className="text-sm font-medium text-[var(--color-text)]">
                     {session.user?.name || session.user?.email}

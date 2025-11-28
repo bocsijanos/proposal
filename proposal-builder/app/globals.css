@@ -420,3 +420,19 @@ button {
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+/* Puck Editor Scroll Fixes */
+/* Simple fix: ensure full height and single scrollbar on the right */
+.puck-editor-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* The Puck container should fill available space */
+.puck-editor-wrapper > div:last-of-type {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}

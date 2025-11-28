@@ -6,26 +6,48 @@ interface Block {
   id: string;
   blockType: string;
   displayOrder: number;
+  content?: {
+    title?: string;
+    originalBlockType?: string;
+    puckData?: unknown;
+  };
 }
 
 interface TableOfContentsProps {
   blocks: Block[];
 }
 
-const blockTypeNames: Record<string, string> = {
-  HERO: 'Bevezető',
-  PRICING_TABLE: 'Árazás',
-  SERVICES_GRID: 'Szolgáltatások',
-  VALUE_PROP: 'Értékajánlat',
-  GUARANTEES: 'Garanciák',
-  CTA: 'Kapcsolatfelvétel',
-  PROCESS_TIMELINE: 'Folyamat',
-  CLIENT_LOGOS: 'Referenciák',
-  TEXT_BLOCK: 'Szöveges tartalom',
-  TWO_COLUMN: 'Kétosztányos',
-  PLATFORM_FEATURES: 'Platform funkciók',
-  STATS: 'Statisztikák',
-};
+// Helper function to get block name from content or fallback to type mapping
+function getBlockName(block: Block): string {
+  // First, try to get title from content
+  if (block.content?.title) {
+    return block.content.title;
+  }
+
+  // Fallback to originalBlockType mapping
+  const typeNames: Record<string, string> = {
+    HERO: 'Bevezető',
+    PRICING_TABLE: 'Árazás',
+    SERVICES_GRID: 'Szolgáltatások',
+    VALUE_PROP: 'Értékajánlat',
+    GUARANTEES: 'Garanciák',
+    CTA: 'Kapcsolatfelvétel',
+    PROCESS_TIMELINE: 'Folyamat',
+    CLIENT_LOGOS: 'Referenciák',
+    TEXT_BLOCK: 'Szöveges tartalom',
+    TWO_COLUMN: 'Kétoszlopos',
+    PLATFORM_FEATURES: 'Platform funkciók',
+    STATS: 'Statisztikák',
+    PUCK_CONTENT: 'Tartalom',
+  };
+
+  const originalType = block.content?.originalBlockType;
+  if (originalType && typeNames[originalType]) {
+    return typeNames[originalType];
+  }
+
+  return typeNames[block.blockType] || `Szekció ${block.displayOrder + 1}`;
+}
 
 export function TableOfContents({ blocks }: TableOfContentsProps) {
   const [activeSection, setActiveSection] = useState<string>('');
@@ -87,7 +109,7 @@ export function TableOfContents({ blocks }: TableOfContentsProps) {
           <ul className="space-y-2">
             {blocks.map((block) => {
               const isActive = activeSection === block.id;
-              const blockName = blockTypeNames[block.blockType] || block.blockType;
+              const blockName = getBlockName(block);
 
               return (
                 <li key={block.id}>
@@ -175,7 +197,7 @@ export function TableOfContents({ blocks }: TableOfContentsProps) {
             <ul className="space-y-2">
               {blocks.map((block) => {
                 const isActive = activeSection === block.id;
-                const blockName = blockTypeNames[block.blockType] || block.blockType;
+                const blockName = getBlockName(block);
 
                 return (
                   <li key={block.id}>

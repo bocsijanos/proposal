@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { BlockEditor, AVAILABLE_FIELDS, EditorState } from '@/components/builder/BlockEditor';
-import { BlockRenderer } from '@/components/builder/BlockRenderer';
+import { PuckRenderer } from '@/components/puck/PuckEditor';
 import {
   DndContext,
   closestCenter,
@@ -25,14 +24,14 @@ import { CSS } from '@dnd-kit/utilities';
 
 interface BlockTemplate {
   id: string;
-  blockType: string;
   name: string;
   description: string | null;
+  blockType: string;
+  brand: 'BOOM' | 'AIBOOST';
   defaultContent: any;
   isActive: boolean;
-  displayOrder: number;
-  brand: 'BOOM' | 'AIBOOST';
-  hasComponentSource?: boolean;
+  displayOrder?: number;
+  thumbnailUrl?: string | null;
 }
 
 interface EditingTemplate {
@@ -41,18 +40,39 @@ interface EditingTemplate {
   description: string | null;
 }
 
+// Category labels for original block types
+const getCategoryLabel = (blockType: string | undefined): { label: string; icon: string; color: string } => {
+  const categories: Record<string, { label: string; icon: string; color: string }> = {
+    'HERO': { label: 'Hero', icon: '🎯', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+    'VALUE_PROP': { label: 'Értékajánlat', icon: '💎', color: 'bg-purple-100 text-purple-800 border-purple-200' },
+    'PRICING_TABLE': { label: 'Árazás', icon: '💰', color: 'bg-green-100 text-green-800 border-green-200' },
+    'CTA': { label: 'CTA', icon: '🚀', color: 'bg-orange-100 text-orange-800 border-orange-200' },
+    'SERVICES_GRID': { label: 'Szolgáltatások', icon: '🔧', color: 'bg-cyan-100 text-cyan-800 border-cyan-200' },
+    'GUARANTEES': { label: 'Garanciák', icon: '✅', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+    'TESTIMONIALS': { label: 'Vélemények', icon: '💬', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+    'PROCESS': { label: 'Folyamat', icon: '📋', color: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
+    'PROCESS_TIMELINE': { label: 'Folyamat', icon: '📋', color: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
+    'FAQ': { label: 'GYIK', icon: '❓', color: 'bg-pink-100 text-pink-800 border-pink-200' },
+    'COVER': { label: 'Borító', icon: '📄', color: 'bg-slate-100 text-slate-800 border-slate-200' },
+    'FOOTER': { label: 'Lábléc', icon: '📍', color: 'bg-gray-100 text-gray-800 border-gray-200' },
+    'TWO_COLUMN': { label: 'Két oszlop', icon: '📐', color: 'bg-teal-100 text-teal-800 border-teal-200' },
+    'PLATFORM_FEATURES': { label: 'Platform', icon: '⚡', color: 'bg-violet-100 text-violet-800 border-violet-200' },
+    'CLIENT_LOGOS': { label: 'Logók', icon: '🏢', color: 'bg-amber-100 text-amber-800 border-amber-200' },
+    'STATS': { label: 'Statisztikák', icon: '📊', color: 'bg-rose-100 text-rose-800 border-rose-200' },
+  };
+
+  return categories[blockType || ''] || { label: 'Egyéb', icon: '🎨', color: 'bg-indigo-100 text-indigo-800 border-indigo-200' };
+};
+
 interface SortableTemplateItemProps {
   template: BlockTemplate;
-  editingId: string | null;
   editingMetadata: EditingTemplate | null;
   viewMode: 'preview' | 'compact';
   isDeleting: boolean;
-  onEdit: (id: string) => void;
+  isHighlighted: boolean;
+  onOpenEditor: (id: string) => void;
   onToggleActive: (id: string, currentState: boolean) => void;
-  onSave: (id: string, newContent: any, newBrand?: 'BOOM' | 'AIBOOST') => void;
-  onCancel: () => void;
   onDelete: (id: string) => void;
-  onMoveToEnd: (id: string) => void;
   onEditMetadata: (id: string) => void;
   onSaveMetadata: (id: string, name: string, description: string | null) => void;
   onCancelMetadata: () => void;
@@ -61,16 +81,13 @@ interface SortableTemplateItemProps {
 
 function SortableTemplateItem({
   template,
-  editingId,
   editingMetadata,
   viewMode,
   isDeleting,
-  onEdit,
+  isHighlighted,
+  onOpenEditor,
   onToggleActive,
-  onSave,
-  onCancel,
   onDelete,
-  onMoveToEnd,
   onEditMetadata,
   onSaveMetadata,
   onCancelMetadata,
@@ -102,9 +119,10 @@ function SortableTemplateItem({
     <div
       ref={setNodeRef}
       style={style}
-      className="relative group transition-all"
+      id={`template-${template.id}`}
+      className={`relative group transition-all ${isHighlighted ? 'ring-4 ring-[var(--color-primary)] ring-opacity-50 rounded-xl' : ''}`}
     >
-      {/* Sidebar Actions: Drag Handle, Edit, Move to End, and Delete */}
+      {/* Sidebar Actions */}
       <div className="absolute -left-12 top-6 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
         <button
           {...attributes}
@@ -115,24 +133,13 @@ function SortableTemplateItem({
           <span className="text-[var(--color-muted)]">⋮⋮</span>
         </button>
         <button
-          onClick={() => onEdit(template.id)}
-          className={`w-8 h-8 rounded border flex items-center justify-center ${
-            editingId === template.id
-              ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white'
-              : 'bg-white border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-blue-50'
-          }`}
-          title="Tartalom szerkesztése"
+          onClick={() => onOpenEditor(template.id)}
+          className="w-8 h-8 rounded border flex items-center justify-center bg-white border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-blue-50"
+          title="Szerkesztés Puck editorban"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
           </svg>
-        </button>
-        <button
-          onClick={() => onMoveToEnd(template.id)}
-          className="w-8 h-8 rounded bg-white border border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-blue-50 flex items-center justify-center"
-          title="Lista végére mozgatás"
-        >
-          <span className="text-[var(--color-primary)]">↓</span>
         </button>
         <button
           onClick={() => {
@@ -148,12 +155,13 @@ function SortableTemplateItem({
       </div>
 
       <div
-        className={`bg-white rounded-xl border-2 p-6 ${
+        className={`bg-white rounded-xl border-2 p-6 cursor-pointer hover:border-[var(--color-primary)] transition-colors ${
           !template.isActive ? 'opacity-50 border-gray-200' : 'border-[var(--color-border)]'
         }`}
+        onClick={() => onOpenEditor(template.id)}
       >
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4" onClick={(e) => e.stopPropagation()}>
           <div className="flex-1">
             {editingMetadata?.id === template.id ? (
               <div className="space-y-2">
@@ -162,7 +170,7 @@ function SortableTemplateItem({
                   value={editingMetadata.name}
                   onChange={(e) => onMetadataChange('name', e.target.value)}
                   className="w-full px-3 py-2 border border-[var(--color-border)] rounded-md text-lg font-semibold text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                  placeholder="Tartalomjegyzék név"
+                  placeholder="Sablon neve"
                 />
                 <input
                   type="text"
@@ -194,18 +202,20 @@ function SortableTemplateItem({
                   <h3 className="text-lg font-semibold text-[var(--color-text)]">
                     {template.name}
                   </h3>
-                  {template.hasComponentSource && (
-                    <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800 border border-green-300">
-                      ✓ Új rendszer
-                    </span>
-                  )}
-                  {!template.hasComponentSource && (
-                    <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 border border-yellow-300">
-                      ⚠ Régi
-                    </span>
-                  )}
+                  {(() => {
+                    const originalBlockType = template.defaultContent?.originalBlockType;
+                    const category = getCategoryLabel(originalBlockType);
+                    return (
+                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full border ${category.color}`}>
+                        {category.icon} {category.label}
+                      </span>
+                    );
+                  })()}
                   <button
-                    onClick={() => onEditMetadata(template.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditMetadata(template.id);
+                    }}
                     className="text-[var(--color-muted)] hover:text-[var(--color-primary)] transition-colors"
                     title="Név és leírás szerkesztése"
                   >
@@ -214,9 +224,6 @@ function SortableTemplateItem({
                     </svg>
                   </button>
                 </div>
-                <p className="text-xs text-[var(--color-muted)] mt-0.5">
-                  Blokk típus: {template.blockType.replace(/_/g, ' ')}
-                </p>
                 {template.description && (
                   <p className="text-sm text-[var(--color-muted)] mt-1">
                     {template.description}
@@ -227,9 +234,11 @@ function SortableTemplateItem({
           </div>
           {!editingMetadata && (
             <div className="flex items-center gap-3">
-              {/* Active toggle */}
               <button
-                onClick={() => onToggleActive(template.id, template.isActive)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleActive(template.id, template.isActive);
+                }}
                 className={`px-3 py-1 text-xs font-medium rounded-full ${
                   template.isActive
                     ? 'bg-green-100 text-green-800'
@@ -242,44 +251,29 @@ function SortableTemplateItem({
           )}
         </div>
 
-        {/* Preview - Preview Mode */}
-        {viewMode === 'preview' && editingId !== template.id && (
-          <div className="mt-4 border border-[var(--color-border)] rounded-lg overflow-hidden">
-            <div className="bg-gray-50 px-4 py-2 border-b border-[var(--color-border)]">
-              <div className="text-xs text-[var(--color-muted)] font-medium">Kinézet előnézet:</div>
-            </div>
-            <div className="p-4">
-              <BlockRenderer
-                block={{
-                  id: template.id,
-                  blockType: template.blockType,
-                  displayOrder: template.displayOrder,
-                  isEnabled: template.isActive,
-                  content: template.defaultContent,
-                } as any}
-                brand={template.brand}
-                proposalData={{
-                  clientName: '{{clientName}}',
-                  createdByName: '{{createdByName}}',
-                }}
-              />
+        {/* Preview */}
+        {viewMode === 'preview' && (
+          <div className="mt-4">
+            <div className="text-xs text-[var(--color-muted)] font-medium mb-2">Előnézet:</div>
+            <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+              {/* PUCK_CONTENT típusnál a puckData mező tartalmazza a Puck adatokat */}
+              {template.blockType === 'PUCK_CONTENT' && template.defaultContent?.puckData?.content?.length > 0 ? (
+                <PuckRenderer data={template.defaultContent.puckData} />
+              ) : template.blockType !== 'PUCK_CONTENT' ? (
+                <div className="p-8 text-center text-gray-400">
+                  <div className="text-4xl mb-2">📋</div>
+                  <p className="font-medium">{template.blockType}</p>
+                  <p className="text-sm mt-1">Régi típusú sablon</p>
+                </div>
+              ) : (
+                <div className="p-8 text-center text-gray-400">
+                  <div className="text-4xl mb-2">🎨</div>
+                  <p>Üres Puck sablon</p>
+                  <p className="text-sm mt-1">Kattints a szerkesztéshez</p>
+                </div>
+              )}
             </div>
           </div>
-        )}
-
-        {/* Editor */}
-        {editingId === template.id && (
-          <BlockEditor
-            block={{
-              id: template.id,
-              blockType: template.blockType,
-              content: template.defaultContent,
-              brand: template.brand,
-            }}
-            onSave={(newContent, newBrand) => onSave(template.id, newContent, newBrand)}
-            onCancel={onCancel}
-            allowBrandChange={true}
-          />
         )}
       </div>
     </div>
@@ -290,13 +284,12 @@ export default function TemplatesPage() {
   const router = useRouter();
   const [templates, setTemplates] = useState<BlockTemplate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [editingMetadata, setEditingMetadata] = useState<EditingTemplate | null>(null);
   const [saving, setSaving] = useState(false);
   const [viewMode, setViewMode] = useState<'preview' | 'compact'>('preview');
   const [selectedBrand, setSelectedBrand] = useState<'BOOM' | 'AIBOOST'>('BOOM');
-  const [showFieldsDropdown, setShowFieldsDropdown] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -308,6 +301,33 @@ export default function TemplatesPage() {
   useEffect(() => {
     fetchTemplates();
   }, [selectedBrand]);
+
+  // Scroll to last edited template when returning from editor
+  useEffect(() => {
+    if (templates.length === 0) return;
+
+    const lastEditedId = sessionStorage.getItem('lastEditedTemplateId');
+    if (lastEditedId) {
+      // Clear immediately so it doesn't persist
+      sessionStorage.removeItem('lastEditedTemplateId');
+
+      // Check if template exists in current list
+      const templateExists = templates.some(t => t.id === lastEditedId);
+      if (!templateExists) return;
+
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        const element = document.getElementById(`template-${lastEditedId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Highlight the template briefly
+          setHighlightedId(lastEditedId);
+          // Remove highlight after animation
+          setTimeout(() => setHighlightedId(null), 2000);
+        }
+      }, 100);
+    }
+  }, [templates]);
 
   const fetchTemplates = async () => {
     try {
@@ -322,57 +342,22 @@ export default function TemplatesPage() {
     }
   };
 
-  const handleEdit = (templateId: string) => {
-    setEditingId(editingId === templateId ? null : templateId);
-  };
-
-  const handleSave = async (templateId: string, newContent: any, newBrand?: 'BOOM' | 'AIBOOST') => {
-    setSaving(true);
-    try {
-      const updateData: any = {
-        defaultContent: newContent,
-      };
-
-      // Only include brand if it was provided (brand change is enabled)
-      if (newBrand) {
-        updateData.brand = newBrand;
-      }
-
-      const response = await fetch(`/api/block-templates/${templateId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updateData),
-      });
-
-      if (response.ok) {
-        await fetchTemplates();
-        setEditingId(null);
-      }
-    } catch (error) {
-      console.error('Error saving template:', error);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleCancel = () => {
-    setEditingId(null);
+  const handleOpenEditor = (templateId: string) => {
+    // Save template ID for scroll-to on return
+    sessionStorage.setItem('lastEditedTemplateId', templateId);
+    // Navigate to Puck editor page
+    router.push(`/dashboard/templates/${templateId}/edit`);
   };
 
   const handleToggleActive = async (templateId: string, currentState: boolean) => {
     try {
-      const template = templates.find(t => t.id === templateId);
-      if (!template) return;
-
       await fetch(`/api/block-templates/${templateId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          defaultContent: template.defaultContent,
           isActive: !currentState,
         }),
       });
-
       await fetchTemplates();
     } catch (error) {
       console.error('Error toggling template:', error);
@@ -380,10 +365,8 @@ export default function TemplatesPage() {
   };
 
   const handleDelete = async (templateId: string) => {
-    // Start delete animation
     setDeletingIds(prev => new Set(prev).add(templateId));
 
-    // Wait for slide-out animation (300ms) + collapse animation (300ms)
     setTimeout(async () => {
       try {
         const response = await fetch(`/api/block-templates/${templateId}`, {
@@ -392,7 +375,6 @@ export default function TemplatesPage() {
 
         if (response.ok) {
           await fetchTemplates();
-          // Remove from deletingIds after fetch completes
           setDeletingIds(prev => {
             const newSet = new Set(prev);
             newSet.delete(templateId);
@@ -400,7 +382,6 @@ export default function TemplatesPage() {
           });
         } else {
           console.error('Failed to delete template');
-          // Revert animation on error
           setDeletingIds(prev => {
             const newSet = new Set(prev);
             newSet.delete(templateId);
@@ -409,14 +390,13 @@ export default function TemplatesPage() {
         }
       } catch (error) {
         console.error('Error deleting template:', error);
-        // Revert animation on error
         setDeletingIds(prev => {
           const newSet = new Set(prev);
           newSet.delete(templateId);
           return newSet;
         });
       }
-    }, 600); // Total animation time: 300ms slide + 300ms collapse
+    }, 600);
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -426,66 +406,9 @@ export default function TemplatesPage() {
       setTemplates((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
-
-        const newItems = arrayMove(items, oldIndex, newIndex);
-
-        // Update displayOrder for all items
-        const updatedItems = newItems.map((item, index) => ({
-          ...item,
-          displayOrder: index,
-        }));
-
-        // Save the new order to the backend
-        setTimeout(() => saveTemplateOrder(updatedItems), 0);
-        return updatedItems;
+        return arrayMove(items, oldIndex, newIndex);
       });
     }
-  };
-
-  const saveTemplateOrder = async (orderedTemplates: BlockTemplate[]) => {
-    try {
-      // Update each template's displayOrder
-      await Promise.all(
-        orderedTemplates.map((template) =>
-          fetch(`/api/block-templates/${template.id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              defaultContent: template.defaultContent,
-              displayOrder: template.displayOrder,
-            }),
-          })
-        )
-      );
-      console.log('✅ Sablon sorrend mentve');
-    } catch (error) {
-      console.error('Error saving template order:', error);
-    }
-  };
-
-  const handleMoveToEnd = async (templateId: string) => {
-    setTemplates((items) => {
-      const templateIndex = items.findIndex((item) => item.id === templateId);
-      if (templateIndex === -1 || templateIndex === items.length - 1) {
-        // Already at the end or not found
-        return items;
-      }
-
-      // Move the template to the end
-      const newItems = [...items];
-      const [movedItem] = newItems.splice(templateIndex, 1);
-      newItems.push(movedItem);
-
-      // Update displayOrder for all items
-      const updatedItems = newItems.map((item, index) => ({
-        ...item,
-        displayOrder: index,
-      }));
-
-      // Save the new order to the backend
-      setTimeout(() => saveTemplateOrder(updatedItems), 0);
-      return updatedItems;
-    });
   };
 
   const handleEditMetadata = (templateId: string) => {
@@ -540,6 +463,44 @@ export default function TemplatesPage() {
     }
   };
 
+  const handleCreateNew = async () => {
+    try {
+      const payload = {
+        name: `Új Puck sablon ${new Date().toLocaleDateString('hu-HU')}`,
+        description: 'Vizuálisan szerkeszthető sablon',
+        brand: selectedBrand,
+        blockType: 'PUCK_CONTENT',
+        defaultContent: {
+          title: 'Új szekció',
+          puckData: {
+            content: [],
+            root: { props: {} },
+          },
+        },
+      };
+
+      const response = await fetch('/api/block-templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        // Save template ID for scroll-to on return
+        sessionStorage.setItem('lastEditedTemplateId', result.id);
+        // Navigate directly to editor for new template
+        router.push(`/dashboard/templates/${result.id}/edit`);
+      } else {
+        const error = await response.json();
+        alert(`Hiba: ${error.error || 'Nem sikerült létrehozni'}`);
+      }
+    } catch (error) {
+      console.error('Error creating template:', error);
+      alert('Hiba történt a sablon létrehozásakor');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -562,7 +523,7 @@ export default function TemplatesPage() {
                 ← Vissza a főoldalra
               </button>
               <h1 className="text-xl font-bold text-[var(--color-text)] mt-1">
-                Blokk sablonok kezelése
+                Puck sablonok kezelése
               </h1>
             </div>
             <div className="flex items-center gap-4">
@@ -592,27 +553,35 @@ export default function TemplatesPage() {
 
               {/* View Mode Selector */}
               <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => setViewMode('preview')}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                  viewMode === 'preview'
-                    ? 'bg-white text-[var(--color-text)] shadow-sm font-medium'
-                    : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                }`}
+                <button
+                  onClick={() => setViewMode('preview')}
+                  className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                    viewMode === 'preview'
+                      ? 'bg-white text-[var(--color-text)] shadow-sm font-medium'
+                      : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                  }`}
+                >
+                  👁️ Előnézet
+                </button>
+                <button
+                  onClick={() => setViewMode('compact')}
+                  className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                    viewMode === 'compact'
+                      ? 'bg-white text-[var(--color-text)] shadow-sm font-medium'
+                      : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                  }`}
+                >
+                  📋 Kompakt
+                </button>
+              </div>
+
+              {/* Add New Button */}
+              <Button
+                onClick={handleCreateNew}
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600"
               >
-                👁️ Kinézet
-              </button>
-              <button
-                onClick={() => setViewMode('compact')}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                  viewMode === 'compact'
-                    ? 'bg-white text-[var(--color-text)] shadow-sm font-medium'
-                    : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
-                }`}
-              >
-                📋 Összecsukva
-              </button>
-            </div>
+                + Új sablon
+              </Button>
             </div>
           </div>
         </div>
@@ -622,7 +591,7 @@ export default function TemplatesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pl-20">
         <div className="mb-6">
           <p className="text-[var(--color-muted)]">
-            Ezek a sablonok határozzák meg az új ajánlatokba automatikusan betöltődő blokkok tartalmát.
+            Kattints egy sablonra a Puck szerkesztő megnyitásához. A módosítások mentése után visszatérsz ide.
           </p>
         </div>
 
@@ -640,16 +609,13 @@ export default function TemplatesPage() {
                 <SortableTemplateItem
                   key={template.id}
                   template={template}
-                  editingId={editingId}
                   editingMetadata={editingMetadata}
                   viewMode={viewMode}
                   isDeleting={deletingIds.has(template.id)}
-                  onEdit={handleEdit}
+                  isHighlighted={highlightedId === template.id}
+                  onOpenEditor={handleOpenEditor}
                   onToggleActive={handleToggleActive}
-                  onSave={handleSave}
-                  onCancel={handleCancel}
                   onDelete={handleDelete}
-                  onMoveToEnd={handleMoveToEnd}
                   onEditMetadata={handleEditMetadata}
                   onSaveMetadata={handleSaveMetadata}
                   onCancelMetadata={handleCancelMetadata}
@@ -662,137 +628,22 @@ export default function TemplatesPage() {
 
         {templates.length === 0 && (
           <div className="text-center py-16 bg-white rounded-xl">
-            <div className="text-6xl mb-4">📋</div>
+            <div className="text-6xl mb-4">🎨</div>
             <h3 className="text-xl font-semibold text-[var(--color-text)] mb-2">
               Még nincsenek sablonok
             </h3>
-            <p className="text-[var(--color-muted)]">
-              Hozz létre egy új ajánlatot, hogy létrejöjjenek az alapértelmezett sablonok.
+            <p className="text-[var(--color-muted)] mb-4">
+              Hozz létre egy új sablont a Puck vizuális szerkesztővel.
             </p>
+            <Button
+              onClick={handleCreateNew}
+              className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600"
+            >
+              + Első sablon létrehozása
+            </Button>
           </div>
         )}
       </div>
-
-      {/* Full-width Sticky Bottom Bar - Only visible when editing */}
-      {editingId && (
-        <div className="fixed bottom-0 left-0 right-0 bg-[#3e4581] border-t-2 border-[#2d3563] shadow-2xl z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between gap-6">
-              {/* Left side: Brand Selector and Fields */}
-              <div className="flex items-center gap-3">
-                {/* Brand Selector */}
-                <button
-                  onClick={() => {
-                    const editorState = (window as any).__editorState as EditorState;
-                    if (editorState) editorState.setBrand('BOOM');
-                  }}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-xl transition-all ${
-                    (window as any).__editorState?.brand === 'BOOM'
-                      ? 'bg-[#fa604a] shadow-lg scale-110'
-                      : 'bg-white/10 hover:bg-white/20'
-                  }`}
-                  title="BOOM"
-                >
-                  💥
-                </button>
-                <button
-                  onClick={() => {
-                    const editorState = (window as any).__editorState as EditorState;
-                    if (editorState) editorState.setBrand('AIBOOST');
-                  }}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center text-xl transition-all ${
-                    (window as any).__editorState?.brand === 'AIBOOST'
-                      ? 'bg-[#fa604a] shadow-lg scale-110'
-                      : 'bg-white/10 hover:bg-white/20'
-                  }`}
-                  title="AIBOOST"
-                >
-                  🤖
-                </button>
-
-                {/* Beszúrható mezők dropdown */}
-                <div className="relative ml-2">
-                  <button
-                    onClick={() => setShowFieldsDropdown(!showFieldsDropdown)}
-                    className="w-10 h-10 rounded-full bg-[#fa604a] hover:bg-[#e54030] flex items-center justify-center text-xl transition-all shadow-lg"
-                    title="Beszúrható mezők"
-                  >
-                    📋
-                  </button>
-                  {showFieldsDropdown && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-40"
-                        onClick={() => setShowFieldsDropdown(false)}
-                      />
-                      <div className="absolute bottom-full left-0 mb-2 w-64 bg-white border border-gray-300 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto">
-                        <div className="p-2 border-b border-gray-200 bg-gray-50">
-                          <div className="text-xs font-medium text-[var(--color-text)]">
-                            Beszúrható mezők
-                          </div>
-                        </div>
-                        <div className="p-2 space-y-1">
-                          {AVAILABLE_FIELDS.map((field) => (
-                            <button
-                              key={field.value}
-                              onClick={() => {
-                                const editorState = (window as any).__editorState as EditorState;
-                                if (editorState) {
-                                  editorState.insertField(field.value);
-                                  setShowFieldsDropdown(false);
-                                }
-                              }}
-                              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded transition-colors"
-                            >
-                              <div className="font-medium text-[var(--color-text)]">
-                                {field.label}
-                              </div>
-                              <div className="text-xs text-[var(--color-muted)] mt-0.5">
-                                {field.description}
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Center: Editing title */}
-              <div className="flex-1 text-center">
-                <span className="text-base font-bold text-white">
-                  Szerkesztés: {templates.find(t => t.id === editingId)?.blockType.replace(/_/g, ' ')}
-                </span>
-              </div>
-
-              {/* Right side: Action buttons */}
-              <div className="flex items-center gap-3">
-                <Button
-                  onClick={handleCancel}
-                  className="bg-white/10 text-white hover:bg-white/20 border-0 backdrop-blur-sm"
-                  size="sm"
-                >
-                  Mégse
-                </Button>
-                <Button
-                  onClick={() => {
-                    const editorState = (window as any).__editorState as EditorState;
-                    if (editorState && !editorState.parseError) {
-                      editorState.handleSave();
-                    }
-                  }}
-                  disabled={saving || (window as any).__editorState?.parseError}
-                  className="bg-[#fa604a] text-white hover:bg-[#e54030] border-0 font-semibold shadow-lg disabled:opacity-50"
-                  size="sm"
-                >
-                  {saving ? 'Mentés...' : '💾 Mentés'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

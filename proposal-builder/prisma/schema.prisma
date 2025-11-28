@@ -18,15 +18,19 @@ model User {
   email         String     @unique
   passwordHash  String     @map("password_hash")
   name          String?
+  phone         String?
+  avatarUrl     String?    @map("avatar_url")
   role          UserRole   @default(ADMIN)
   isActive      Boolean    @default(true) @map("is_active")
   lastLoginAt   DateTime?  @map("last_login_at")
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
 
-  proposals     Proposal[]
-  accounts      Account[]
-  sessions      Session[]
+  proposals       Proposal[]
+  accounts        Account[]
+  sessions        Session[]
+  puckTemplates   PuckTemplate[]
+  uploadedImages  UploadedImage[]
 
   @@index([email])
   @@map("users")
@@ -158,9 +162,9 @@ model ProposalBlock {
   templateId     String?   @map("template_id")
   template       BlockTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
 
-  // Custom Component Code (proposal-specific override)
-  customComponentId String?  @map("custom_component_id")
-  customComponent   ProposalComponentCode? @relation(fields: [customComponentId], references: [id], onDelete: SetNull)
+  // Rendered HTML Cache
+  renderedHtml   String?   @db.Text @map("rendered_html")
+  lastRenderedAt DateTime? @map("last_rendered_at")
 
   // Timestamps
   createdAt      DateTime  @default(now()) @map("created_at")
@@ -170,25 +174,12 @@ model ProposalBlock {
   @@index([proposalId, displayOrder])
   @@index([proposalId, isEnabled])
   @@index([blockType])
-  @@index([customComponentId])
   @@map("proposal_blocks")
 }
 
+// Only PUCK_CONTENT type - all content is managed by Puck editor
 enum BlockType {
-  HERO
-  VALUE_PROP
-  PLATFORM_FEATURES
-  PRICING_TABLE
-  GUARANTEES
-  PROCESS_TIMELINE
-  CLIENT_LOGOS
-  SERVICES_GRID
-  TEXT_BLOCK
-  TWO_COLUMN
-  CTA
-  STATS
-  BONUS_FEATURES
-  PARTNER_GRID
+  PUCK_CONTENT
 }
 
 // ============================================================================
@@ -225,42 +216,6 @@ model BlockTemplate {
   @@index([brand, isActive])
   @@index([displayOrder])
   @@map("block_templates")
-}
-
-// ============================================================================
-// PROPOSAL-SPECIFIC COMPONENT CODE
-// ============================================================================
-
-model ProposalComponentCode {
-  id             String    @id @default(cuid())
-  proposalId     String    @map("proposal_id")
-  blockType      BlockType @map("block_type")
-
-  // Component Source Code (copied from ComponentSource at proposal creation)
-  sourceCode     String    @db.Text
-  compiledCode   String?   @db.Text
-  schema         Json      // JSON schema for dynamic form generation
-
-  // Versioning (inherited from ComponentSource)
-  sourceVersion  Int       @default(1) @map("source_version")
-
-  // Metadata
-  isCustomized   Boolean   @default(false) @map("is_customized") // Has this been edited after creation?
-  lastEditedBy   String?   @map("last_edited_by")
-  lastEditedAt   DateTime? @map("last_edited_at")
-
-  // Timestamps
-  createdAt      DateTime  @default(now()) @map("created_at")
-  updatedAt      DateTime  @updatedAt @map("updated_at")
-
-  // Relations
-  blocks         ProposalBlock[]
-
-  @@unique([proposalId, blockType])
-  @@index([proposalId])
-  @@index([blockType])
-  @@index([isCustomized])
-  @@map("proposal_component_code")
 }
 
 // ============================================================================
@@ -309,50 +264,70 @@ model ProposalView {
 }
 
 // ============================================================================
-// COMPONENT SOURCE MANAGEMENT
+// UPLOADED IMAGES (Media library)
 // ============================================================================
 
-/// Master component source - one per block type
-/// This stores the canonical version of each component's code
-model ComponentSource {
-  id              String    @id @default(cuid())
-  blockType       BlockType @unique @map("block_type")
-  name            String
-  description     String?
-  sourceCode      String    @db.Text @map("source_code")
-  compiledCode    String    @db.Text @map("compiled_code")
-  schema          Json
-  version         Int       @default(1)
-  isActive        Boolean   @default(true) @map("is_active")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-  lastCompiledAt  DateTime? @map("last_compiled_at")
+model UploadedImage {
+  id            String    @id @default(cuid())
+  filename      String
+  originalName  String    @map("original_name")
+  url           String
+  mimeType      String    @map("mime_type")
+  size          Int       // File size in bytes
+  width         Int?      // Image width in pixels
+  height        Int?      // Image height in pixels
 
-  versions        ComponentVersion[]
+  // Organization
+  folder        String    @default("general")
+  alt           String?   // Alt text for accessibility
 
-  @@index([blockType])
-  @@index([isActive])
-  @@index([updatedAt(sort: Desc)])
-  @@map("component_sources")
+  // Ownership
+  uploadedById  String    @map("uploaded_by_id")
+  uploadedBy    User      @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  @@index([folder])
+  @@index([uploadedById])
+  @@index([createdAt(sort: Desc)])
+  @@map("uploaded_images")
 }
 
-/// Version history for components
-model ComponentVersion {
-  id                String    @id @default(cuid())
-  componentId       String    @map("component_id")
-  component         ComponentSource @relation(fields: [componentId], references: [id], onDelete: Cascade)
+// ============================================================================
+// PUCK EDITOR TEMPLATES (User-created templates)
+// ============================================================================
 
-  versionNumber     Int       @map("version_number")
-  changeDescription String?   @map("change_description")
-  sourceCode        String    @db.Text @map("source_code")
-  compiledCode      String    @db.Text @map("compiled_code")
-  schema            Json
+/// User-created Puck templates for reuse
+model PuckTemplate {
+  id              String    @id @default(cuid())
+  name            String
+  description     String?
+  category        String    @default("custom")
 
-  createdById       String    @map("created_by_id")
-  createdAt         DateTime  @default(now()) @map("created_at")
+  // Puck Data structure stored as JSON
+  data            Json
 
-  @@unique([componentId, versionNumber])
-  @@index([componentId, versionNumber(sort: Desc)])
+  // Brand association
+  brand           Brand     @default(BOOM)
+
+  // Metadata
+  thumbnailUrl    String?   @map("thumbnail_url")
+  isActive        Boolean   @default(true) @map("is_active")
+  usageCount      Int       @default(0) @map("usage_count")
+
+  // Ownership
+  createdById     String    @map("created_by_id")
+  createdBy       User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@index([brand])
+  @@index([isActive])
+  @@index([createdById])
   @@index([createdAt(sort: Desc)])
-  @@map("component_versions")
+  @@map("puck_templates")
 }

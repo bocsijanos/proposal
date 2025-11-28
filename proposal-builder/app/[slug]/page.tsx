@@ -25,6 +25,23 @@ async function getProposal(slug: string) {
         orderBy: {
           displayOrder: 'asc',
         },
+        select: {
+          id: true,
+          blockType: true,
+          content: true,
+          displayOrder: true,
+          renderedHtml: true,
+          lastRenderedAt: true,
+        },
+      },
+      // Include creator (admin) info for template variables
+      createdBy: {
+        select: {
+          name: true,
+          email: true,
+          phone: true,
+          avatarUrl: true,
+        },
       },
     },
   });
@@ -170,14 +187,33 @@ export default async function ProposalPage({ params }: PageProps) {
           <div className="space-y-8 md:space-y-10 lg:space-y-12">
             {proposal.blocks.map((block: any) => (
               <div key={block.id} className="animate-fadeIn" data-block-id={block.id}>
-                <BlockRenderer
-                  block={block}
-                  brand={proposal.brand}
-                  proposalData={{
-                    clientName: proposal.clientName,
-                    createdByName: proposal.createdByName
-                  }}
-                />
+                {/* Use server-rendered HTML if available, otherwise use dynamic rendering */}
+                {block.renderedHtml ? (
+                  <div
+                    className="rendered-block"
+                    data-block-type={block.blockType}
+                    dangerouslySetInnerHTML={{ __html: block.renderedHtml }}
+                  />
+                ) : (
+                  <BlockRenderer
+                    block={block}
+                    brand={proposal.brand}
+                    proposalData={{
+                      // Client data
+                      clientName: proposal.clientName,
+                      clientEmail: proposal.clientEmail,
+                      clientPhone: proposal.clientPhone,
+                      clientContactName: proposal.clientContactName,
+                      // Admin data
+                      adminName: proposal.createdBy?.name,
+                      adminEmail: proposal.createdBy?.email,
+                      adminPhone: proposal.createdBy?.phone,
+                      adminAvatar: proposal.createdBy?.avatarUrl,
+                      // Legacy
+                      createdByName: proposal.createdByName || proposal.createdBy?.name,
+                    }}
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -218,8 +254,8 @@ export default async function ProposalPage({ params }: PageProps) {
             </div>
             <div className="text-center md:text-right text-sm text-white/70">
               <div>Árajánlat generálva: {new Date().toLocaleDateString('hu-HU')}</div>
-              {proposal.createdByName && (
-                <div className="mt-1">Készítette: {proposal.createdByName}</div>
+              {(proposal.createdByName || proposal.createdBy?.name) && (
+                <div className="mt-1">Készítette: {proposal.createdByName || proposal.createdBy?.name}</div>
               )}
               <div className="mt-1">
                 © {new Date().getFullYear()} {proposal.brand === 'BOOM' ? 'Boom Marketing' : 'AiBoost'}. Minden jog fenntartva.

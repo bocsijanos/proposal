@@ -14,9 +14,7 @@ export default function NewProposalPage() {
   const [clientContactName, setClientContactName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [clientEmail, setClientEmail] = useState('');
-  const [selectedBrand, setSelectedBrand] = useState<'BOOM' | 'AIBOOST'>(
-    theme === 'boom' ? 'BOOM' : 'AIBOOST'
-  );
+  const [selectedBrand, setSelectedBrand] = useState<'BOOM' | 'AIBOOST'>(theme);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
