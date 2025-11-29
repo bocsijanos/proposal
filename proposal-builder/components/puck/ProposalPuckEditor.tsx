@@ -364,33 +364,7 @@ function EditorHeader({
               disabled={saving}
               className="px-3 py-1.5 bg-[#fa604a] hover:bg-[#e54030] rounded-lg font-semibold transition-colors disabled:opacity-50 text-sm"
             >
-              {saving ? 'Mentés...' : '💾 Mentés és Bezárás'}
-            </button>
-          )}
-          {actions.onPreview && (
-            <button
-              onClick={actions.onPreview}
-              className="px-3 py-1.5 bg-blue-500/50 hover:bg-blue-500/70 rounded-lg transition-colors text-sm"
-            >
-              👁️ Előnézet
-            </button>
-          )}
-          {actions.onPublish && (
-            <button
-              onClick={actions.onPublish}
-              disabled={saving}
-              className="px-3 py-1.5 bg-[#fa604a] hover:bg-[#e54030] rounded-lg font-semibold transition-colors disabled:opacity-50 text-sm"
-            >
-              🚀 Publikálás
-            </button>
-          )}
-          {actions.onUnpublish && (
-            <button
-              onClick={actions.onUnpublish}
-              disabled={saving}
-              className="px-3 py-1.5 bg-orange-500/50 hover:bg-orange-500/70 rounded-lg transition-colors disabled:opacity-50 text-sm"
-            >
-              Visszavonás
+              {saving ? 'Mentés...' : '💾 Mentés és Vissza'}
             </button>
           )}
         </div>

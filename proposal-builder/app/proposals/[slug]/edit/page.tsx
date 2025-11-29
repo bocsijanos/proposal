@@ -190,11 +190,11 @@ export default function EditProposalPage() {
     alert('Mentve!');
   }, [saveProposal]);
 
-  // Handle save and close
-  const handleSaveAndClose = useCallback(async (data: Data): Promise<void> => {
+  // Handle save and back to list
+  const handleSaveAndBack = useCallback(async (data: Data): Promise<void> => {
     await saveProposal(data);
-    router.push('/dashboard');
-  }, [saveProposal, router]);
+    setViewMode('list');
+  }, [saveProposal]);
 
   // Handle publish
   const handlePublish = useCallback(async (data: Data): Promise<void> => {
@@ -503,7 +503,7 @@ export default function EditProposalPage() {
     );
   }
 
-  // Editor View - Puck editor
+  // Editor View - Puck editor (no publish actions - those are on list page)
   return (
     <ProposalPuckEditor
       initialData={initialData}
@@ -515,10 +515,7 @@ export default function EditProposalPage() {
         type: proposal.status === 'PUBLISHED' ? 'published' : 'draft',
       }}
       onSave={handleSave}
-      onSaveAndClose={handleSaveAndClose}
-      onPublish={proposal.status !== 'PUBLISHED' ? handlePublish : undefined}
-      onUnpublish={proposal.status === 'PUBLISHED' ? handleUnpublish : undefined}
-      onPreview={proposal.status === 'PUBLISHED' ? handlePreview : undefined}
+      onSaveAndClose={handleSaveAndBack}
       onClose={() => setViewMode('list')}
       showVariables={true}
     />
