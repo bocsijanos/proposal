@@ -30,12 +30,12 @@ export interface BrandTokens {
     body: string;
   };
   typography: {
-    h1: { size: string; weight: number; lineHeight: number; color: string; mobileSize: string };
-    h2: { size: string; weight: number; lineHeight: number; color: string; mobileSize: string };
-    h3: { size: string; weight: number; lineHeight: number; color: string; mobileSize: string };
-    h4: { size: string; weight: number; lineHeight: number; color: string; mobileSize: string };
-    h5: { size: string; weight: number; lineHeight: number; color: string; mobileSize: string };
-    h6: { size: string; weight: number; lineHeight: number; color: string; mobileSize: string };
+    h1: { size: string; weight: number; lineHeight: number; color: string; tabletSize: string; mobileSize: string };
+    h2: { size: string; weight: number; lineHeight: number; color: string; tabletSize: string; mobileSize: string };
+    h3: { size: string; weight: number; lineHeight: number; color: string; tabletSize: string; mobileSize: string };
+    h4: { size: string; weight: number; lineHeight: number; color: string; tabletSize: string; mobileSize: string };
+    h5: { size: string; weight: number; lineHeight: number; color: string; tabletSize: string; mobileSize: string };
+    h6: { size: string; weight: number; lineHeight: number; color: string; tabletSize: string; mobileSize: string };
     body: { size: string; weight: number; lineHeight: number; color: string };
     bodyLarge: { size: string; weight: number; lineHeight: number; color: string };
     bodySmall: { size: string; weight: number; lineHeight: number; color: string };
@@ -155,12 +155,13 @@ export function getSimplifiedTokens(brand: Brand): BrandTokens {
         body: boomTokens.typography.fontFamily.primary,
       },
       typography: {
-        h1: { size: boomTokens.typography.h1.size, weight: boomTokens.typography.h1.weight, lineHeight: boomTokens.typography.h1.lineHeight, color: boomTokens.typography.h1.color, mobileSize: '36px' },
-        h2: { size: boomTokens.typography.h2.size, weight: boomTokens.typography.h2.weight, lineHeight: boomTokens.typography.h2.lineHeight, color: boomTokens.typography.h2.color, mobileSize: '28px' },
-        h3: { size: boomTokens.typography.h3.size, weight: boomTokens.typography.h3.weight, lineHeight: boomTokens.typography.h3.lineHeight, color: boomTokens.typography.h3.color, mobileSize: '24px' },
-        h4: { size: boomTokens.typography.h4.size, weight: boomTokens.typography.h4.weight, lineHeight: boomTokens.typography.h4.lineHeight, color: boomTokens.typography.h4.color, mobileSize: '20px' },
-        h5: { size: boomTokens.typography.h5.size, weight: boomTokens.typography.h5.weight, lineHeight: boomTokens.typography.h5.lineHeight, color: boomTokens.typography.h5.color, mobileSize: '18px' },
-        h6: { size: boomTokens.typography.h6.size, weight: boomTokens.typography.h6.weight, lineHeight: boomTokens.typography.h6.lineHeight, color: boomTokens.typography.h6.color, mobileSize: '16px' },
+        // Desktop → Tablet → Mobile méretek (3 lépcsős responsive)
+        h1: { size: boomTokens.typography.h1.size, weight: boomTokens.typography.h1.weight, lineHeight: boomTokens.typography.h1.lineHeight, color: boomTokens.typography.h1.color, tabletSize: '48px', mobileSize: '36px' },
+        h2: { size: boomTokens.typography.h2.size, weight: boomTokens.typography.h2.weight, lineHeight: boomTokens.typography.h2.lineHeight, color: boomTokens.typography.h2.color, tabletSize: '36px', mobileSize: '28px' },
+        h3: { size: boomTokens.typography.h3.size, weight: boomTokens.typography.h3.weight, lineHeight: boomTokens.typography.h3.lineHeight, color: boomTokens.typography.h3.color, tabletSize: '28px', mobileSize: '24px' },
+        h4: { size: boomTokens.typography.h4.size, weight: boomTokens.typography.h4.weight, lineHeight: boomTokens.typography.h4.lineHeight, color: boomTokens.typography.h4.color, tabletSize: '22px', mobileSize: '20px' },
+        h5: { size: boomTokens.typography.h5.size, weight: boomTokens.typography.h5.weight, lineHeight: boomTokens.typography.h5.lineHeight, color: boomTokens.typography.h5.color, tabletSize: '19px', mobileSize: '18px' },
+        h6: { size: boomTokens.typography.h6.size, weight: boomTokens.typography.h6.weight, lineHeight: boomTokens.typography.h6.lineHeight, color: boomTokens.typography.h6.color, tabletSize: '17px', mobileSize: '16px' },
         body: { size: boomTokens.typography.body.medium.size, weight: boomTokens.typography.body.medium.weight, lineHeight: boomTokens.typography.body.medium.lineHeight, color: boomTokens.typography.body.medium.color },
         bodyLarge: { size: '1.125rem', weight: 400, lineHeight: 1.6, color: boomTokens.typography.body.medium.color },
         bodySmall: { size: boomTokens.typography.body.small.size, weight: boomTokens.typography.body.small.weight, lineHeight: boomTokens.typography.body.small.lineHeight, color: boomTokens.typography.body.small.color },
@@ -270,12 +271,13 @@ export function getSimplifiedTokens(brand: Brand): BrandTokens {
       body: aiboostTokens.typography.fontFamily.primary,
     },
     typography: {
-      h1: { size: aiboostTokens.typography.h1.size, weight: aiboostTokens.typography.h1.weight, lineHeight: aiboostTokens.typography.h1.lineHeight, color: aiboostTokens.typography.h1.color, mobileSize: '36px' },
-      h2: { size: aiboostTokens.typography.h2.size, weight: aiboostTokens.typography.h2.weight, lineHeight: aiboostTokens.typography.h2.lineHeight, color: aiboostTokens.typography.h2.color, mobileSize: '28px' },
-      h3: { size: aiboostTokens.typography.h3.size, weight: aiboostTokens.typography.h3.weight, lineHeight: aiboostTokens.typography.h3.lineHeight, color: aiboostTokens.typography.h3.color, mobileSize: '24px' },
-      h4: { size: aiboostTokens.typography.h4.size, weight: aiboostTokens.typography.h4.weight, lineHeight: aiboostTokens.typography.h4.lineHeight, color: aiboostTokens.typography.h4.color, mobileSize: '20px' },
-      h5: { size: aiboostTokens.typography.h5.size, weight: aiboostTokens.typography.h5.weight, lineHeight: aiboostTokens.typography.h5.lineHeight, color: aiboostTokens.typography.h5.color, mobileSize: '18px' },
-      h6: { size: aiboostTokens.typography.h6.size, weight: aiboostTokens.typography.h6.weight, lineHeight: aiboostTokens.typography.h6.lineHeight, color: aiboostTokens.typography.h6.color, mobileSize: '16px' },
+      // Desktop → Tablet → Mobile méretek (3 lépcsős responsive)
+      h1: { size: aiboostTokens.typography.h1.size, weight: aiboostTokens.typography.h1.weight, lineHeight: aiboostTokens.typography.h1.lineHeight, color: aiboostTokens.typography.h1.color, tabletSize: '48px', mobileSize: '36px' },
+      h2: { size: aiboostTokens.typography.h2.size, weight: aiboostTokens.typography.h2.weight, lineHeight: aiboostTokens.typography.h2.lineHeight, color: aiboostTokens.typography.h2.color, tabletSize: '36px', mobileSize: '28px' },
+      h3: { size: aiboostTokens.typography.h3.size, weight: aiboostTokens.typography.h3.weight, lineHeight: aiboostTokens.typography.h3.lineHeight, color: aiboostTokens.typography.h3.color, tabletSize: '28px', mobileSize: '24px' },
+      h4: { size: aiboostTokens.typography.h4.size, weight: aiboostTokens.typography.h4.weight, lineHeight: aiboostTokens.typography.h4.lineHeight, color: aiboostTokens.typography.h4.color, tabletSize: '22px', mobileSize: '20px' },
+      h5: { size: aiboostTokens.typography.h5.size, weight: aiboostTokens.typography.h5.weight, lineHeight: aiboostTokens.typography.h5.lineHeight, color: aiboostTokens.typography.h5.color, tabletSize: '19px', mobileSize: '18px' },
+      h6: { size: aiboostTokens.typography.h6.size, weight: aiboostTokens.typography.h6.weight, lineHeight: aiboostTokens.typography.h6.lineHeight, color: aiboostTokens.typography.h6.color, tabletSize: '17px', mobileSize: '16px' },
       body: { size: aiboostTokens.typography.body.size, weight: aiboostTokens.typography.body.weight, lineHeight: aiboostTokens.typography.body.lineHeight, color: aiboostTokens.typography.body.color },
       bodyLarge: { size: '1.125rem', weight: 400, lineHeight: 1.6, color: aiboostTokens.typography.body.color },
       bodySmall: { size: aiboostTokens.typography.bodySmall.size, weight: aiboostTokens.typography.bodySmall.weight, lineHeight: aiboostTokens.typography.bodySmall.lineHeight, color: aiboostTokens.typography.bodySmall.color },

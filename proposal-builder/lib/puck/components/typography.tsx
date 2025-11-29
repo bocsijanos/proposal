@@ -46,12 +46,12 @@ export const HeadingConfig: ComponentConfig<HeadingProps> = {
       type: 'select',
       label: 'Címsor szint',
       options: [
-        { label: 'H1 - Főcím (60px)', value: 'h1' },
-        { label: 'H2 - Szekciócím (42-46px)', value: 'h2' },
-        { label: 'H3 - Alcím (32px)', value: 'h3' },
-        { label: 'H4 - Kis alcím (24px)', value: 'h4' },
-        { label: 'H5 - Form cím (20px)', value: 'h5' },
-        { label: 'H6 - Legkisebb (18px)', value: 'h6' },
+        { label: 'H1 - Főcím (60px → 48px → 36px)', value: 'h1' },
+        { label: 'H2 - Szekciócím (42px → 36px → 28px)', value: 'h2' },
+        { label: 'H3 - Alcím (32px → 28px → 24px)', value: 'h3' },
+        { label: 'H4 - Kis alcím (24px → 22px → 20px)', value: 'h4' },
+        { label: 'H5 - Form cím (20px → 19px → 18px)', value: 'h5' },
+        { label: 'H6 - Legkisebb (18px → 17px → 16px)', value: 'h6' },
       ],
     },
     alignment: {
@@ -88,7 +88,7 @@ export const HeadingConfig: ComponentConfig<HeadingProps> = {
     const headingId = React.useId();
     const safeId = headingId.replace(/:/g, '');
 
-    // Get typography settings from design tokens (including mobile size)
+    // Get typography settings from design tokens (including tablet and mobile sizes)
     const typography = tokens.typography[level];
 
     // Resolve color from design tokens
@@ -117,6 +117,7 @@ export const HeadingConfig: ComponentConfig<HeadingProps> = {
     const resolvedColor = getColor();
     const HeadingTag = level as React.ElementType;
 
+    // 3 lépcsős responsive: Desktop (>768px) → Tablet (480-768px) → Mobile (<480px)
     return (
       <>
         <style>{`
@@ -136,13 +137,26 @@ export const HeadingConfig: ComponentConfig<HeadingProps> = {
             word-wrap: break-word;
             overflow-wrap: break-word;
           }
+          /* Tablet méret (480px - 768px között) */
           @container (max-width: ${tokens.breakpoints.tablet}) {
+            .puck-heading-${safeId} {
+              font-size: ${typography.tabletSize};
+            }
+          }
+          /* Mobil méret (480px alatt) */
+          @container (max-width: ${tokens.breakpoints.mobile}) {
             .puck-heading-${safeId} {
               font-size: ${typography.mobileSize};
             }
           }
+          /* Fallback media query-k ha nincs container query támogatás */
           @supports not (container-type: inline-size) {
             @media (max-width: ${tokens.breakpoints.tablet}) {
+              .puck-heading-${safeId} {
+                font-size: ${typography.tabletSize};
+              }
+            }
+            @media (max-width: ${tokens.breakpoints.mobile}) {
               .puck-heading-${safeId} {
                 font-size: ${typography.mobileSize};
               }
