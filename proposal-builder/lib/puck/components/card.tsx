@@ -9,6 +9,7 @@ type ShadowType = 'none' | 'subtle' | 'medium' | 'large';
 type PaddingType = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 type RadiusType = 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
 type BackgroundType = 'white' | 'light' | 'dark' | 'transparent';
+type BorderStyleType = 'none' | 'simple' | 'facebook-instagram' | 'google' | 'tiktok' | 'custom';
 
 interface CardProps {
   shadow: ShadowType;
@@ -16,6 +17,9 @@ interface CardProps {
   borderRadius: RadiusType;
   background: BackgroundType;
   hasBorder: boolean;
+  borderStyle: BorderStyleType;
+  borderWidth: number;
+  customGradient?: string;
 }
 
 export const CardConfig: ComponentConfig<CardProps> = {
@@ -27,6 +31,8 @@ export const CardConfig: ComponentConfig<CardProps> = {
     borderRadius: 'lg',
     background: 'white',
     hasBorder: true,
+    borderStyle: 'simple',
+    borderWidth: 2,
   },
 
   fields: {
@@ -78,10 +84,43 @@ export const CardConfig: ComponentConfig<CardProps> = {
         { label: 'Nem', value: false },
       ],
     },
+    borderStyle: {
+      type: 'select',
+      label: 'Keret stílus',
+      options: [
+        { label: 'Egyszerű', value: 'simple' },
+        { label: '🔵🟣 Facebook + Instagram', value: 'facebook-instagram' },
+        { label: '🔴🟡🟢🔵 Google', value: 'google' },
+        { label: '⬛ TikTok', value: 'tiktok' },
+        { label: '🎨 Egyedi gradiens', value: 'custom' },
+        { label: 'Nincs', value: 'none' },
+      ],
+    },
+    borderWidth: {
+      type: 'number',
+      label: 'Keret vastagság (px)',
+      min: 1,
+      max: 8,
+    },
+    customGradient: {
+      type: 'text',
+      label: 'Egyedi gradiens (pl: linear-gradient(45deg, #ff0000, #0000ff))',
+    },
   },
 
-  render: ({ shadow = 'subtle', padding = 'md', borderRadius = 'lg', background = 'white', hasBorder = true }) => {
+  render: ({
+    shadow = 'subtle',
+    padding = 'md',
+    borderRadius = 'lg',
+    background = 'white',
+    hasBorder = true,
+    borderStyle = 'simple',
+    borderWidth = 2,
+    customGradient,
+  }) => {
     const tokens = usePuckTokens();
+    const cardId = React.useId();
+    const safeId = cardId.replace(/:/g, '');
 
     // Use design tokens for shadows
     const shadowMap: Record<ShadowType, string> = {
@@ -126,13 +165,73 @@ export const CardConfig: ComponentConfig<CardProps> = {
       transparent: tokens.colors.text,
     };
 
+    // Gradient definitions for social platforms
+    const gradientMap: Record<BorderStyleType, string> = {
+      none: 'none',
+      simple: 'none',
+      'facebook-instagram': 'linear-gradient(45deg, #1877F2, #833AB4, #E4405F, #F77737)',
+      'google': 'linear-gradient(45deg, #4285F4, #EA4335, #FBBC05, #34A853)',
+      'tiktok': 'linear-gradient(45deg, #000000, #25F4EE, #FE2C55, #000000)',
+      'custom': customGradient || 'linear-gradient(45deg, #ff0000, #0000ff)',
+    };
+
+    const hasGradientBorder = borderStyle !== 'none' && borderStyle !== 'simple' && hasBorder;
+    const hasSimpleBorder = borderStyle === 'simple' && hasBorder;
+    const gradient = gradientMap[borderStyle];
+    const radius = radiusMap[borderRadius];
+
+    // For gradient borders, we use a wrapper with pseudo-element
+    if (hasGradientBorder) {
+      return (
+        <>
+          <style>{`
+            .card-gradient-wrapper-${safeId} {
+              position: relative;
+              padding: ${borderWidth}px;
+              background: ${gradient};
+              border-radius: ${radius};
+              box-shadow: ${shadowMap[shadow]};
+              transition: all 0.3s ease;
+            }
+            .card-gradient-wrapper-${safeId}:hover {
+              box-shadow: ${shadowMap[shadow]}, 0 0 20px rgba(0,0,0,0.1);
+              transform: translateY(-2px);
+            }
+            .card-gradient-inner-${safeId} {
+              background: ${backgroundMap[background]};
+              color: ${textColorMap[background]};
+              border-radius: calc(${radius} - ${borderWidth}px);
+              padding: ${paddingMap[padding]};
+              height: 100%;
+            }
+            /* Animated shimmer effect for gradient borders */
+            @keyframes shimmer-${safeId} {
+              0% { background-position: 0% 50%; }
+              50% { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
+            }
+            .card-gradient-wrapper-${safeId}.animated {
+              background-size: 200% 200%;
+              animation: shimmer-${safeId} 3s ease infinite;
+            }
+          `}</style>
+          <div className={`card-gradient-wrapper-${safeId} animated`}>
+            <div className={`card-gradient-inner-${safeId}`}>
+              <DropZone zone="cardContent" />
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    // Simple border or no border
     return (
       <div
         style={{
           backgroundColor: backgroundMap[background],
           color: textColorMap[background],
-          border: hasBorder ? `1px solid ${tokens.colors.border}` : 'none',
-          borderRadius: radiusMap[borderRadius],
+          border: hasSimpleBorder ? `1px solid ${tokens.colors.border}` : 'none',
+          borderRadius: radius,
           boxShadow: shadowMap[shadow],
           padding: paddingMap[padding],
           transition: 'all 0.2s ease',
