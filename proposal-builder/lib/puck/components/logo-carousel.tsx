@@ -190,10 +190,11 @@ export const LogoCarouselConfig: ComponentConfig<LogoCarouselProps> = {
     }
 
     // Speed mapping (animation duration in seconds)
+    // Slower = higher number (more seconds to complete one cycle)
     const speedMap = {
-      slow: 40,
-      medium: 25,
-      fast: 15,
+      slow: 120,    // Very slow, relaxed scrolling
+      medium: 80,   // Medium pace
+      fast: 40,     // Fast (was the old "slow")
     };
 
     // Logo height mapping
