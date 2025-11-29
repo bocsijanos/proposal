@@ -26,7 +26,7 @@ interface Proposal {
 export default function EditProposalPage() {
   const params = useParams();
   const router = useRouter();
-  const proposalId = params.id as string;
+  const proposalId = params.slug as string;
 
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [loading, setLoading] = useState(true);
