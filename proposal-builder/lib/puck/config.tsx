@@ -113,41 +113,13 @@ export const puckConfig: Config = {
 
   root: {
     fields: {
-      templateName: {
+      title: {
         type: 'text',
-        label: 'Sablon neve',
-      },
-      templateDescription: {
-        type: 'textarea',
-        label: 'Sablon leírása',
-      },
-      templateCategory: {
-        type: 'select',
-        label: 'Kategória',
-        options: [
-          { value: 'HERO', label: '🎯 Hero' },
-          { value: 'VALUE_PROP', label: '💎 Értékajánlat' },
-          { value: 'PRICING_TABLE', label: '💰 Árazás' },
-          { value: 'CTA', label: '🚀 CTA' },
-          { value: 'SERVICES_GRID', label: '🔧 Szolgáltatások' },
-          { value: 'GUARANTEES', label: '✅ Garanciák' },
-          { value: 'TESTIMONIALS', label: '💬 Vélemények' },
-          { value: 'PROCESS', label: '📋 Folyamat' },
-          { value: 'FAQ', label: '❓ GYIK' },
-          { value: 'COVER', label: '📄 Borító' },
-          { value: 'FOOTER', label: '📍 Lábléc' },
-          { value: 'TWO_COLUMN', label: '📐 Két oszlop' },
-          { value: 'PLATFORM_FEATURES', label: '⚡ Platform' },
-          { value: 'CLIENT_LOGOS', label: '🏢 Logók' },
-          { value: 'STATS', label: '📊 Statisztikák' },
-          { value: 'OTHER', label: '🎨 Egyéb' },
-        ],
+        label: 'Szekció neve',
       },
     },
     defaultProps: {
-      templateName: '',
-      templateDescription: '',
-      templateCategory: 'OTHER',
+      title: '',
     },
     render: ({ children }: { children: React.ReactNode }) => {
       return (

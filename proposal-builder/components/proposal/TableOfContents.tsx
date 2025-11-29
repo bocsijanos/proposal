@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface Block {
   id: string;
@@ -19,7 +19,13 @@ interface TableOfContentsProps {
 
 // Helper function to get block name from content or fallback to type mapping
 function getBlockName(block: Block): string {
-  // First, try to get title from content
+  // First, try to get title from puckData.root.props (edited in Puck editor)
+  const puckData = block.content?.puckData as { root?: { props?: { title?: string } } } | undefined;
+  if (puckData?.root?.props?.title) {
+    return puckData.root.props.title;
+  }
+
+  // Second, try to get title from content (set during proposal creation)
   if (block.content?.title) {
     return block.content.title;
   }
@@ -52,6 +58,8 @@ function getBlockName(block: Block): string {
 export function TableOfContents({ blocks }: TableOfContentsProps) {
   const [activeSection, setActiveSection] = useState<string>('');
   const [isOpen, setIsOpen] = useState(false);
+  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(true);
+  const tocRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -79,6 +87,18 @@ export function TableOfContents({ blocks }: TableOfContentsProps) {
     };
   }, []);
 
+  // Close desktop TOC when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (tocRef.current && !tocRef.current.contains(event.target as Node)) {
+        setIsDesktopCollapsed(true);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const scrollToBlock = (blockId: string) => {
     const element = document.querySelector(`[data-block-id="${blockId}"]`);
     if (element) {
@@ -86,58 +106,97 @@ export function TableOfContents({ blocks }: TableOfContentsProps) {
       const headerHeight = header ? header.offsetHeight : 0;
 
       const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerHeight - 20;
+      const offsetPosition = elementPosition + window.scrollY - headerHeight - 20;
 
       window.scrollTo({
         top: offsetPosition,
         behavior: 'smooth',
       });
 
-      // Close drawer on mobile after clicking
+      // Close drawer/TOC after clicking
       setIsOpen(false);
+      setIsDesktopCollapsed(true);
     }
   };
 
   return (
     <>
-      {/* Desktop: Fixed sidebar */}
-      <nav className="hidden xl:block fixed right-8 top-1/2 -translate-y-1/2 z-40 w-64">
-        <div className="bg-white/95 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 p-6">
-          <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">
-            Tartalomjegyzék
-          </h3>
-          <ul className="space-y-2">
-            {blocks.map((block) => {
-              const isActive = activeSection === block.id;
-              const blockName = getBlockName(block);
+      {/* Desktop: Fixed collapsible sidebar */}
+      <nav ref={tocRef} className="hidden xl:block fixed right-8 top-1/2 -translate-y-1/2 z-40">
+        <div className="relative">
+          {/* Collapsed state - just icon */}
+          <button
+            onClick={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
+            className={`
+              absolute right-0 top-0 w-12 h-12 rounded-full shadow-xl border border-gray-200
+              bg-white/95 backdrop-blur-lg flex items-center justify-center
+              transition-all duration-300 hover:scale-110 hover:shadow-2xl
+              ${isDesktopCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+            `}
+            aria-label="Tartalomjegyzék megnyitása"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
 
-              return (
-                <li key={block.id}>
-                  <button
-                    onClick={() => scrollToBlock(block.id)}
-                    className={`
-                      w-full text-left px-3 py-2 rounded-full transition-all text-sm
-                      ${
-                        isActive
-                          ? 'bg-[var(--color-primary)] text-white font-semibold'
-                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                      }
-                    `}
-                  >
-                    <span className="flex items-center gap-2">
-                      <span
-                        className={`
-                        w-1.5 h-1.5 rounded-full flex-shrink-0
-                        ${isActive ? 'bg-white' : 'bg-gray-400'}
+          {/* Expanded state - full TOC */}
+          <div
+            className={`
+              w-64 bg-white/95 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 p-6
+              transition-all duration-300 origin-right
+              ${isDesktopCollapsed
+                ? 'opacity-0 scale-95 translate-x-4 pointer-events-none'
+                : 'opacity-100 scale-100 translate-x-0'}
+            `}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
+                Tartalomjegyzék
+              </h3>
+              <button
+                onClick={() => setIsDesktopCollapsed(true)}
+                className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+                aria-label="Bezárás"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+            <ul className="space-y-2">
+              {blocks.map((block) => {
+                const isActive = activeSection === block.id;
+                const blockName = getBlockName(block);
+
+                return (
+                  <li key={block.id}>
+                    <button
+                      onClick={() => scrollToBlock(block.id)}
+                      className={`
+                        w-full text-left px-3 py-2 rounded-full transition-all text-sm
+                        ${
+                          isActive
+                            ? 'bg-[var(--color-primary)] text-white font-semibold'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                        }
                       `}
-                      />
-                      <span className="truncate">{blockName}</span>
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+                    >
+                      <span className="flex items-center gap-2">
+                        <span
+                          className={`
+                          w-1.5 h-1.5 rounded-full flex-shrink-0
+                          ${isActive ? 'bg-white' : 'bg-gray-400'}
+                        `}
+                        />
+                        <span className="truncate">{blockName}</span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </div>
       </nav>
 

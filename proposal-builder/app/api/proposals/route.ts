@@ -155,13 +155,20 @@ export async function POST(request: NextRequest) {
 
     if (templates.length > 0) {
       // Use templates from database - all are PUCK_CONTENT type
-      blocksToCreate = templates.map((template, index) => ({
-        blockType: 'PUCK_CONTENT' as const,
-        displayOrder: index,
-        isEnabled: template.isActive,
-        content: template.defaultContent as Prisma.InputJsonValue,
-        templateId: template.id,
-      }));
+      // Add the template.name as title for TOC display
+      blocksToCreate = templates.map((template, index) => {
+        const defaultContent = template.defaultContent as Record<string, unknown>;
+        return {
+          blockType: 'PUCK_CONTENT' as const,
+          displayOrder: index,
+          isEnabled: template.isActive,
+          content: {
+            ...defaultContent,
+            title: template.name, // Use template name for TOC display
+          } as Prisma.InputJsonValue,
+          templateId: template.id,
+        };
+      });
     } else {
       // Fallback: create a single empty PUCK_CONTENT block
       blocksToCreate = [

@@ -270,15 +270,21 @@ export default function EditProposalPage() {
   // Get initial data - if editing a specific block, use that block's data
   const initialData = getPuckDataFromProposal(proposal, editingBlockId);
 
-  // Get block name from template
+  // Get block name from content (prioritizing Puck editor's title field)
   const getBlockName = (block: Proposal['blocks'][0]) => {
+    const content = block.content as any;
+
+    // First: try to get title from puckData.root.props (edited in Puck editor)
+    if (content?.puckData?.root?.props?.title) {
+      return content.puckData.root.props.title;
+    }
+
+    // Second: try to get title from content (set during proposal creation)
+    if (content?.title) return content.title;
+
+    // Third: try from template
     const template = templates.find(t => t.id === block.templateId);
     if (template) return template.name;
-
-    // Fallback: try to get title from content
-    const content = block.content as any;
-    if (content?.title) return content.title;
-    if (content?.puckData?.root?.props?.title) return content.puckData.root.props.title;
 
     return block.blockType;
   };

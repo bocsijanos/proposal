@@ -77,43 +77,24 @@ export default function TemplateEditPage() {
   const saveTemplate = useCallback(async (data: Data): Promise<void> => {
     if (!template) return;
 
-    // Extract metadata from root props
+    // Extract title from root props (simplified - only title field)
     const rootProps = (data.root?.props || {}) as Record<string, unknown>;
-    const templateName = (rootProps.templateName as string) || template.name || 'Névtelen sablon';
-    const templateDescription = (rootProps.templateDescription as string) || null;
-    const templateCategory = (rootProps.templateCategory as string) || 'OTHER';
-
-    // Clean up puckData - remove metadata fields from root props before saving
-    const cleanedPuckData = {
-      ...data,
-      root: {
-        ...data.root,
-        props: {
-          ...rootProps,
-          // Keep these out of the actual puck data to avoid duplication
-          templateName: undefined,
-          templateDescription: undefined,
-          templateCategory: undefined,
-        },
-      },
-    };
+    const templateTitle = (rootProps.title as string) || template.name || 'Névtelen sablon';
 
     // For PUCK_CONTENT type: save puckData inside defaultContent
     // For other types: save directly as defaultContent (converts old template to Puck)
     const newDefaultContent = template.blockType === 'PUCK_CONTENT'
       ? {
           ...template.defaultContent,
-          puckData: cleanedPuckData,
-          originalBlockType: templateCategory, // Update category
+          puckData: data,
         }
-      : cleanedPuckData;
+      : data;
 
     const response = await fetch(`/api/block-templates/${templateId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: templateName,
-        description: templateDescription,
+        name: templateTitle,
         defaultContent: newDefaultContent,
       }),
     });
@@ -175,16 +156,14 @@ export default function TemplateEditPage() {
         root: { props: {} },
       };
 
-  // Inject template metadata into root props for editing in the Page panel
+  // Inject template name into root props for editing in the Page panel
   const initialData: Data = {
     ...basePuckData,
     root: {
       ...basePuckData.root,
       props: {
         ...basePuckData.root?.props,
-        templateName: template.name || '',
-        templateDescription: template.description || '',
-        templateCategory: template.defaultContent?.originalBlockType || 'OTHER',
+        title: template.name || '',
       },
     },
   };
