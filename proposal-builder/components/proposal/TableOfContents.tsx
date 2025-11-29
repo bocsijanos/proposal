@@ -59,7 +59,19 @@ export function TableOfContents({ blocks }: TableOfContentsProps) {
   const [activeSection, setActiveSection] = useState<string>('');
   const [isOpen, setIsOpen] = useState(false);
   const [hasShownIntro, setHasShownIntro] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const tocRef = useRef<HTMLDivElement>(null);
+
+  // Check if desktop on mount and resize
+  useEffect(() => {
+    const checkDesktop = () => {
+      setIsDesktop(window.matchMedia('(min-width: 1024px)').matches);
+    };
+
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
 
   // Intersection observer for active section tracking
   useEffect(() => {
@@ -89,9 +101,6 @@ export function TableOfContents({ blocks }: TableOfContentsProps) {
 
   // Desktop intro animation: show TOC briefly then collapse
   useEffect(() => {
-    // Only run on desktop (xl breakpoint = 1280px)
-    const isDesktop = window.matchMedia('(min-width: 1280px)').matches;
-
     if (isDesktop && !hasShownIntro) {
       // Small delay before showing
       const showTimer = setTimeout(() => {
@@ -108,7 +117,7 @@ export function TableOfContents({ blocks }: TableOfContentsProps) {
 
       return () => clearTimeout(showTimer);
     }
-  }, [hasShownIntro]);
+  }, [isDesktop, hasShownIntro]);
 
   // Close when clicking outside
   useEffect(() => {
@@ -136,20 +145,67 @@ export function TableOfContents({ blocks }: TableOfContentsProps) {
         behavior: 'smooth',
       });
 
-      setIsOpen(false);
+      // Only close on mobile
+      if (!isDesktop) {
+        setIsOpen(false);
+      }
     }
   };
 
+  // Shared list content
+  const tocContent = (
+    <ul className={isDesktop ? 'space-y-1' : 'space-y-2'}>
+      {blocks.map((block) => {
+        const isActive = activeSection === block.id;
+        const blockName = getBlockName(block);
+
+        return (
+          <li key={block.id}>
+            <button
+              onClick={() => scrollToBlock(block.id)}
+              className={`
+                w-full text-left transition-all
+                ${isDesktop
+                  ? `px-3 py-2 rounded-lg text-sm ${
+                      isActive
+                        ? 'bg-[var(--color-primary)] text-white font-medium'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    }`
+                  : `px-4 py-3 rounded-full ${
+                      isActive
+                        ? 'bg-[var(--color-primary)] text-white font-semibold'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    }`
+                }
+              `}
+            >
+              <span className="flex items-center gap-3">
+                <span
+                  className={`
+                    w-2 h-2 rounded-full flex-shrink-0
+                    ${isActive ? 'bg-white' : 'bg-gray-400'}
+                  `}
+                />
+                <span className={isDesktop ? 'truncate' : ''}>{blockName}</span>
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
+  );
+
   return (
     <div ref={tocRef}>
-      {/* Floating Action Button - unified for all screen sizes */}
+      {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(true)}
         className={`
-          fixed bottom-6 right-6 z-50 w-14 h-14
+          fixed z-50 w-14 h-14
           bg-[var(--color-primary)] text-white rounded-full shadow-2xl
           hover:scale-110 transition-all duration-300
           flex items-center justify-center
+          ${isDesktop ? 'bottom-8 right-8' : 'bottom-6 right-6'}
           ${isOpen ? 'opacity-0 pointer-events-none scale-90' : 'opacity-100'}
         `}
         aria-label="Tartalomjegyzék megnyitása"
@@ -159,82 +215,86 @@ export function TableOfContents({ blocks }: TableOfContentsProps) {
         </svg>
       </button>
 
-      {/* Backdrop */}
+      {/* Backdrop - different opacity for desktop */}
       <div
         className={`
-          fixed inset-0 bg-black/50 z-50 backdrop-blur-sm
-          transition-opacity duration-300
+          fixed inset-0 z-50 transition-opacity duration-300
+          ${isDesktop ? 'bg-black/20' : 'bg-black/50 backdrop-blur-sm'}
           ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
         `}
         onClick={() => setIsOpen(false)}
       />
 
-      {/* Drawer - unified design */}
-      <div
-        className={`
-          fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl
-          transition-transform duration-300 ease-out
-          ${isOpen ? 'translate-y-0' : 'translate-y-full'}
-        `}
-        style={{ maxHeight: '70vh' }}
-      >
-        {/* Handle bar */}
-        <div className="flex justify-center pt-3 pb-2">
-          <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-        </div>
+      {/* Desktop: Right sidebar drawer */}
+      {isDesktop && (
+        <div
+          className={`
+            fixed top-0 right-0 bottom-0 z-50 w-72
+            bg-white shadow-2xl border-l border-gray-200
+            transition-transform duration-300 ease-out
+            ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+          `}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <h3 className="text-base font-semibold text-gray-900">
+              Tartalomjegyzék
+            </h3>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Bezárás"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-bold text-gray-900">
-            Tartalomjegyzék
-          </h3>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-            aria-label="Bezárás"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
-          </button>
+          {/* Content */}
+          <div className="overflow-y-auto p-4" style={{ maxHeight: 'calc(100vh - 65px)' }}>
+            {tocContent}
+          </div>
         </div>
+      )}
 
-        {/* Content */}
-        <div className="overflow-y-auto px-6 py-4" style={{ maxHeight: 'calc(70vh - 120px)' }}>
-          <ul className="space-y-2">
-            {blocks.map((block) => {
-              const isActive = activeSection === block.id;
-              const blockName = getBlockName(block);
+      {/* Mobile: Bottom drawer */}
+      {!isDesktop && (
+        <div
+          className={`
+            fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl
+            transition-transform duration-300 ease-out
+            ${isOpen ? 'translate-y-0' : 'translate-y-full'}
+          `}
+          style={{ maxHeight: '70vh' }}
+        >
+          {/* Handle bar */}
+          <div className="flex justify-center pt-3 pb-2">
+            <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+          </div>
 
-              return (
-                <li key={block.id}>
-                  <button
-                    onClick={() => scrollToBlock(block.id)}
-                    className={`
-                      w-full text-left px-4 py-3 rounded-full transition-all
-                      ${
-                        isActive
-                          ? 'bg-[var(--color-primary)] text-white font-semibold'
-                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                      }
-                    `}
-                  >
-                    <span className="flex items-center gap-3">
-                      <span
-                        className={`
-                        w-2 h-2 rounded-full flex-shrink-0
-                        ${isActive ? 'bg-white' : 'bg-gray-400'}
-                      `}
-                      />
-                      <span>{blockName}</span>
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-bold text-gray-900">
+              Tartalomjegyzék
+            </h3>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              aria-label="Bezárás"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="overflow-y-auto px-6 py-4" style={{ maxHeight: 'calc(70vh - 120px)' }}>
+            {tocContent}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
