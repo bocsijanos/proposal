@@ -4,6 +4,42 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Data } from '@measured/puck';
 import { ProposalPuckEditor } from '@/components/puck/ProposalPuckEditor';
+import { PuckRenderer } from '@/components/puck/PuckEditor';
+import { Button } from '@/components/ui/button';
+
+// Category labels for original block types (same as templates page)
+const getCategoryLabel = (blockType: string | undefined): { label: string; icon: string; color: string } => {
+  const categories: Record<string, { label: string; icon: string; color: string }> = {
+    'HERO': { label: 'Hero', icon: '🎯', color: 'bg-blue-100 text-blue-800 border-blue-200' },
+    'VALUE_PROP': { label: 'Értékajánlat', icon: '💎', color: 'bg-purple-100 text-purple-800 border-purple-200' },
+    'PRICING_TABLE': { label: 'Árazás', icon: '💰', color: 'bg-green-100 text-green-800 border-green-200' },
+    'CTA': { label: 'CTA', icon: '🚀', color: 'bg-orange-100 text-orange-800 border-orange-200' },
+    'SERVICES_GRID': { label: 'Szolgáltatások', icon: '🔧', color: 'bg-cyan-100 text-cyan-800 border-cyan-200' },
+    'GUARANTEES': { label: 'Garanciák', icon: '✅', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+    'TESTIMONIALS': { label: 'Vélemények', icon: '💬', color: 'bg-yellow-100 text-yellow-800 border-yellow-200' },
+    'PROCESS': { label: 'Folyamat', icon: '📋', color: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
+    'PROCESS_TIMELINE': { label: 'Folyamat', icon: '📋', color: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
+    'FAQ': { label: 'GYIK', icon: '❓', color: 'bg-pink-100 text-pink-800 border-pink-200' },
+    'COVER': { label: 'Borító', icon: '📄', color: 'bg-slate-100 text-slate-800 border-slate-200' },
+    'FOOTER': { label: 'Lábléc', icon: '📍', color: 'bg-gray-100 text-gray-800 border-gray-200' },
+    'TWO_COLUMN': { label: 'Két oszlop', icon: '📐', color: 'bg-teal-100 text-teal-800 border-teal-200' },
+    'PLATFORM_FEATURES': { label: 'Platform', icon: '⚡', color: 'bg-violet-100 text-violet-800 border-violet-200' },
+    'CLIENT_LOGOS': { label: 'Logók', icon: '🏢', color: 'bg-amber-100 text-amber-800 border-amber-200' },
+    'STATS': { label: 'Statisztikák', icon: '📊', color: 'bg-rose-100 text-rose-800 border-rose-200' },
+    'PUCK_CONTENT': { label: 'Puck tartalom', icon: '🎨', color: 'bg-indigo-100 text-indigo-800 border-indigo-200' },
+  };
+
+  return categories[blockType || ''] || { label: 'Egyéb', icon: '🎨', color: 'bg-indigo-100 text-indigo-800 border-indigo-200' };
+};
+
+interface BlockTemplate {
+  id: string;
+  name: string;
+  blockType: string;
+  displayOrder: number;
+  isActive: boolean;
+  defaultContent: any;
+}
 
 interface Proposal {
   id: string;
@@ -20,8 +56,11 @@ interface Proposal {
     displayOrder: number;
     isEnabled: boolean;
     content: any;
+    templateId?: string | null;
   }>;
 }
+
+type ViewMode = 'list' | 'editor';
 
 export default function EditProposalPage() {
   const params = useParams();
@@ -29,8 +68,12 @@ export default function EditProposalPage() {
   const proposalId = params.slug as string;
 
   const [proposal, setProposal] = useState<Proposal | null>(null);
+  const [templates, setTemplates] = useState<BlockTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
+  const [viewModeType, setViewModeType] = useState<'preview' | 'compact'>('preview');
 
   // Keep track of refreshed proposal for save operations
   const proposalRef = useRef<Proposal | null>(null);
@@ -53,6 +96,13 @@ export default function EditProposalPage() {
       const data = await response.json();
       setProposal(data);
       proposalRef.current = data;
+
+      // Fetch templates for this brand
+      const templatesRes = await fetch(`/api/block-templates?brand=${data.brand}`);
+      if (templatesRes.ok) {
+        const templatesData = await templatesRes.json();
+        setTemplates(templatesData.templates || []);
+      }
     } catch (err) {
       console.error('Error fetching proposal:', err);
       setError('Hiba történt az árajánlat betöltésekor');
@@ -215,6 +265,245 @@ export default function EditProposalPage() {
   // Get initial Puck data
   const initialData = getPuckDataFromProposal(proposal);
 
+  // Get block name from template
+  const getBlockName = (block: Proposal['blocks'][0]) => {
+    const template = templates.find(t => t.id === block.templateId);
+    if (template) return template.name;
+
+    // Fallback: try to get title from content
+    const content = block.content as any;
+    if (content?.title) return content.title;
+    if (content?.puckData?.root?.props?.title) return content.puckData.root.props.title;
+
+    return block.blockType;
+  };
+
+  // Get component count from Puck data
+  const getComponentCount = (block: Proposal['blocks'][0]) => {
+    const content = block.content as any;
+    if (content?.puckData?.content) {
+      return content.puckData.content.length;
+    }
+    return 0;
+  };
+
+  // Handle block click - open editor
+  const handleBlockClick = (blockId: string) => {
+    setEditingBlockId(blockId);
+    setViewMode('editor');
+  };
+
+  // List View - shows blocks/templates with actions (like templates page)
+  if (viewMode === 'list') {
+    return (
+      <div className="min-h-screen bg-[var(--color-background-alt)]">
+        {/* Header - sticky */}
+        <div className="bg-white border-b border-[var(--color-border)] sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div>
+                <button
+                  onClick={handleClose}
+                  className="text-[var(--color-primary)] hover:underline text-sm"
+                >
+                  ← Vissza a főoldalra
+                </button>
+                <div className="flex items-center gap-3 mt-1">
+                  <h1 className="text-xl font-bold text-[var(--color-text)]">
+                    {proposal.clientName}
+                  </h1>
+                  <span className="px-2 py-0.5 text-xs bg-[var(--color-primary)]/10 text-[var(--color-primary)] rounded-full font-medium">
+                    {proposal.brand}
+                  </span>
+                  <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${
+                    proposal.status === 'PUBLISHED'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {proposal.status === 'PUBLISHED' ? '🟢 Publikálva' : '🟡 Piszkozat'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                {/* View Mode Selector */}
+                <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewModeType('preview')}
+                    className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                      viewModeType === 'preview'
+                        ? 'bg-white text-[var(--color-text)] shadow-sm font-medium'
+                        : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                    }`}
+                  >
+                    👁️ Előnézet
+                  </button>
+                  <button
+                    onClick={() => setViewModeType('compact')}
+                    className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                      viewModeType === 'compact'
+                        ? 'bg-white text-[var(--color-text)] shadow-sm font-medium'
+                        : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                    }`}
+                  >
+                    📋 Kompakt
+                  </button>
+                </div>
+
+                {/* Action buttons */}
+                {proposal.status === 'PUBLISHED' && (
+                  <Button
+                    onClick={handlePreview}
+                    variant="outline"
+                  >
+                    👁️ Megtekintés
+                  </Button>
+                )}
+                {proposal.status !== 'PUBLISHED' ? (
+                  <Button
+                    onClick={() => handlePublish(initialData)}
+                    className="bg-green-500 hover:bg-green-600 text-white"
+                  >
+                    🚀 Publikálás
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleUnpublish}
+                    variant="outline"
+                    className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                  >
+                    Visszavonás
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-6">
+            <p className="text-[var(--color-muted)]">
+              Kattints egy blokkra a Puck szerkesztő megnyitásához.
+              <span className="ml-2 font-mono text-sm bg-gray-100 px-2 py-0.5 rounded">{proposal.slug}</span>
+            </p>
+          </div>
+
+          {/* Blocks list */}
+          <div className="space-y-6">
+            {proposal.blocks.length === 0 ? (
+              <div className="text-center py-16 bg-white rounded-xl">
+                <div className="text-6xl mb-4">📄</div>
+                <h3 className="text-xl font-semibold text-[var(--color-text)] mb-2">
+                  Nincsenek blokkok az ajánlatban
+                </h3>
+                <p className="text-[var(--color-muted)] mb-4">
+                  Adj hozzá blokkokat a szerkesztőben.
+                </p>
+                <Button
+                  onClick={() => setViewMode('editor')}
+                  className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600"
+                >
+                  + Szerkesztés megkezdése
+                </Button>
+              </div>
+            ) : (
+              proposal.blocks
+                .sort((a, b) => a.displayOrder - b.displayOrder)
+                .map((block, index) => {
+                  const template = templates.find(t => t.id === block.templateId);
+                  const originalBlockType = (block.content as any)?.originalBlockType || block.blockType;
+                  const category = getCategoryLabel(originalBlockType);
+                  const puckData = (block.content as any)?.puckData;
+
+                  return (
+                    <div
+                      key={block.id}
+                      className="relative group"
+                    >
+                      {/* Sidebar Actions */}
+                      <div className="absolute -left-12 top-6 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
+                        <button
+                          onClick={() => handleBlockClick(block.id)}
+                          className="w-8 h-8 rounded border flex items-center justify-center bg-white border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-blue-50"
+                          title="Szerkesztés Puck editorban"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                          </svg>
+                        </button>
+                      </div>
+
+                      <div
+                        className={`bg-white rounded-xl border-2 p-6 cursor-pointer hover:border-[var(--color-primary)] transition-colors ${
+                          !block.isEnabled ? 'opacity-50 border-gray-200' : 'border-[var(--color-border)]'
+                        }`}
+                        onClick={() => handleBlockClick(block.id)}
+                      >
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-[var(--color-muted)]">#{index + 1}</span>
+                              <h3 className="text-lg font-semibold text-[var(--color-text)]">
+                                {getBlockName(block)}
+                              </h3>
+                              <span className={`px-2 py-0.5 text-xs font-medium rounded-full border ${category.color}`}>
+                                {category.icon} {category.label}
+                              </span>
+                              {template && (
+                                <span className="text-xs px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded">
+                                  Sablonból
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Toggle block enabled status would go here
+                              }}
+                              className={`px-3 py-1 text-xs font-medium rounded-full ${
+                                block.isEnabled
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}
+                            >
+                              {block.isEnabled ? 'Aktív' : 'Inaktív'}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Preview */}
+                        {viewModeType === 'preview' && (
+                          <div className="mt-4">
+                            <div className="text-xs text-[var(--color-muted)] font-medium mb-2">Előnézet:</div>
+                            <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+                              {puckData?.content?.length > 0 ? (
+                                <PuckRenderer data={puckData} />
+                              ) : (
+                                <div className="p-8 text-center text-gray-400">
+                                  <div className="text-4xl mb-2">🎨</div>
+                                  <p>Üres blokk</p>
+                                  <p className="text-sm mt-1">Kattints a szerkesztéshez</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Editor View - Puck editor
   return (
     <ProposalPuckEditor
       initialData={initialData}
@@ -230,7 +519,7 @@ export default function EditProposalPage() {
       onPublish={proposal.status !== 'PUBLISHED' ? handlePublish : undefined}
       onUnpublish={proposal.status === 'PUBLISHED' ? handleUnpublish : undefined}
       onPreview={proposal.status === 'PUBLISHED' ? handlePreview : undefined}
-      onClose={handleClose}
+      onClose={() => setViewMode('list')}
       showVariables={true}
     />
   );
