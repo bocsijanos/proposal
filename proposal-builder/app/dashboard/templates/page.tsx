@@ -479,6 +479,16 @@ export default function TemplatesPage() {
     }
   };
 
+  const scrollToTemplate = (templateId: string) => {
+    // Small delay to allow React to re-render after state change
+    setTimeout(() => {
+      const element = document.getElementById(`template-${templateId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 50);
+  };
+
   const handleMoveUp = async (templateId: string) => {
     const currentIndex = templates.findIndex(t => t.id === templateId);
     if (currentIndex <= 0) return;
@@ -487,6 +497,7 @@ export default function TemplatesPage() {
     [newTemplates[currentIndex - 1], newTemplates[currentIndex]] =
       [newTemplates[currentIndex], newTemplates[currentIndex - 1]];
     setTemplates(newTemplates);
+    scrollToTemplate(templateId);
     await saveTemplateOrder(newTemplates);
   };
 
@@ -498,6 +509,7 @@ export default function TemplatesPage() {
     [newTemplates[currentIndex], newTemplates[currentIndex + 1]] =
       [newTemplates[currentIndex + 1], newTemplates[currentIndex]];
     setTemplates(newTemplates);
+    scrollToTemplate(templateId);
     await saveTemplateOrder(newTemplates);
   };
 
@@ -512,6 +524,7 @@ export default function TemplatesPage() {
       ...templates.slice(currentIndex + 1),
     ];
     setTemplates(newTemplates);
+    scrollToTemplate(templateId);
     await saveTemplateOrder(newTemplates);
   };
 
