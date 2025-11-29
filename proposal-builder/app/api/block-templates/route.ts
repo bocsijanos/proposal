@@ -53,14 +53,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get highest displayOrder for this brand
-    const lastTemplate = await prisma.blockTemplate.findFirst({
+    // NEW TEMPLATES GO TO THE BEGINNING (displayOrder: 0)
+    // First, shift all existing templates down by 1
+    const existingTemplates = await prisma.blockTemplate.findMany({
       where: { brand: brand || 'BOOM' },
-      orderBy: { displayOrder: 'desc' },
-      select: { displayOrder: true },
+      orderBy: { displayOrder: 'asc' },
+      select: { id: true, displayOrder: true },
     });
 
-    const newDisplayOrder = (lastTemplate?.displayOrder ?? -1) + 1;
+    // Shift existing templates down
+    for (const template of existingTemplates) {
+      await prisma.blockTemplate.update({
+        where: { id: template.id },
+        data: { displayOrder: template.displayOrder + 1 },
+      });
+    }
 
     // All templates are now PUCK_CONTENT type
     const newTemplate = await prisma.blockTemplate.create({
@@ -71,8 +78,14 @@ export async function POST(request: NextRequest) {
         defaultContent: defaultContent || { puckData: { content: [], root: { props: {} } } },
         brand: brand || 'BOOM',
         isActive: true,
-        displayOrder: newDisplayOrder,
+        displayOrder: 0, // New templates always go to the beginning
       },
+    });
+
+    console.log('✅ New template created at beginning:', {
+      id: newTemplate.id,
+      name: newTemplate.name,
+      displayOrder: newTemplate.displayOrder,
     });
 
     return NextResponse.json(newTemplate, { status: 201 });
@@ -80,6 +93,64 @@ export async function POST(request: NextRequest) {
     console.error('Error creating template:', error);
     return NextResponse.json(
       { error: 'Failed to create template' },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH /api/block-templates - Update template order (bulk update)
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { templates } = body;
+
+    if (!Array.isArray(templates)) {
+      return NextResponse.json(
+        { error: 'Templates must be an array' },
+        { status: 400 }
+      );
+    }
+
+    // Two-phase update to avoid unique constraint conflicts (if any)
+    // Phase 1: Set all displayOrders to negative values temporarily
+    for (let i = 0; i < templates.length; i++) {
+      await prisma.blockTemplate.update({
+        where: { id: templates[i].id },
+        data: {
+          displayOrder: -(i + 1), // Negative temporary value
+        },
+      });
+    }
+
+    // Phase 2: Set final displayOrder values
+    for (const template of templates) {
+      await prisma.blockTemplate.update({
+        where: { id: template.id },
+        data: {
+          displayOrder: template.displayOrder,
+        },
+      });
+    }
+
+    console.log('✅ Templates reordered successfully:', {
+      count: templates.length,
+      templates: templates.map((t: { id: string; displayOrder: number }) => ({
+        id: t.id.slice(0, 8),
+        order: t.displayOrder,
+      })),
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error updating template order:', error);
+    return NextResponse.json(
+      { error: 'Failed to update template order' },
       { status: 500 }
     );
   }

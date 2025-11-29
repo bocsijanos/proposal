@@ -66,6 +66,8 @@ const getCategoryLabel = (blockType: string | undefined): { label: string; icon:
 
 interface SortableTemplateItemProps {
   template: BlockTemplate;
+  index: number;
+  totalCount: number;
   editingMetadata: EditingTemplate | null;
   viewMode: 'preview' | 'compact';
   isDeleting: boolean;
@@ -77,10 +79,15 @@ interface SortableTemplateItemProps {
   onSaveMetadata: (id: string, name: string, description: string | null) => void;
   onCancelMetadata: () => void;
   onMetadataChange: (field: 'name' | 'description', value: string) => void;
+  onMoveUp: (id: string) => void;
+  onMoveDown: (id: string) => void;
+  onMoveToTop: (id: string) => void;
 }
 
 function SortableTemplateItem({
   template,
+  index,
+  totalCount,
   editingMetadata,
   viewMode,
   isDeleting,
@@ -92,6 +99,9 @@ function SortableTemplateItem({
   onSaveMetadata,
   onCancelMetadata,
   onMetadataChange,
+  onMoveUp,
+  onMoveDown,
+  onMoveToTop,
 }: SortableTemplateItemProps) {
   const {
     attributes,
@@ -132,6 +142,46 @@ function SortableTemplateItem({
         >
           <span className="text-[var(--color-muted)]">⋮⋮</span>
         </button>
+        {/* Move Up */}
+        <button
+          onClick={() => onMoveUp(template.id)}
+          disabled={index === 0}
+          className={`w-8 h-8 rounded bg-white border flex items-center justify-center ${
+            index === 0
+              ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+              : 'border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-blue-50'
+          }`}
+          title="Mozgatás fel"
+        >
+          <span>⬆️</span>
+        </button>
+        {/* Move Down */}
+        <button
+          onClick={() => onMoveDown(template.id)}
+          disabled={index === totalCount - 1}
+          className={`w-8 h-8 rounded bg-white border flex items-center justify-center ${
+            index === totalCount - 1
+              ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+              : 'border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-blue-50'
+          }`}
+          title="Mozgatás le"
+        >
+          <span>⬇️</span>
+        </button>
+        {/* Move to Top */}
+        <button
+          onClick={() => onMoveToTop(template.id)}
+          disabled={index === 0}
+          className={`w-8 h-8 rounded bg-white border flex items-center justify-center ${
+            index === 0
+              ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+              : 'border-green-200 hover:border-green-500 hover:bg-green-50'
+          }`}
+          title="Küldés előre"
+        >
+          <span>⏫</span>
+        </button>
+        {/* Edit */}
         <button
           onClick={() => onOpenEditor(template.id)}
           className="w-8 h-8 rounded border flex items-center justify-center bg-white border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-blue-50"
@@ -141,6 +191,7 @@ function SortableTemplateItem({
             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
           </svg>
         </button>
+        {/* Delete */}
         <button
           onClick={() => {
             if (confirm('Biztosan törölni szeretnéd ezt a sablont?')) {
@@ -399,16 +450,69 @@ export default function TemplatesPage() {
     }, 600);
   };
 
+  const saveTemplateOrder = async (reorderedTemplates: BlockTemplate[]) => {
+    try {
+      const templatesToUpdate = reorderedTemplates.map((template, index) => ({
+        id: template.id,
+        displayOrder: index,
+      }));
+
+      await fetch('/api/block-templates', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templates: templatesToUpdate }),
+      });
+    } catch (error) {
+      console.error('Error saving template order:', error);
+    }
+  };
+
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      setTemplates((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
+      const oldIndex = templates.findIndex((item) => item.id === active.id);
+      const newIndex = templates.findIndex((item) => item.id === over.id);
+      const newTemplates = arrayMove(templates, oldIndex, newIndex);
+      setTemplates(newTemplates);
+      await saveTemplateOrder(newTemplates);
     }
+  };
+
+  const handleMoveUp = async (templateId: string) => {
+    const currentIndex = templates.findIndex(t => t.id === templateId);
+    if (currentIndex <= 0) return;
+
+    const newTemplates = [...templates];
+    [newTemplates[currentIndex - 1], newTemplates[currentIndex]] =
+      [newTemplates[currentIndex], newTemplates[currentIndex - 1]];
+    setTemplates(newTemplates);
+    await saveTemplateOrder(newTemplates);
+  };
+
+  const handleMoveDown = async (templateId: string) => {
+    const currentIndex = templates.findIndex(t => t.id === templateId);
+    if (currentIndex >= templates.length - 1) return;
+
+    const newTemplates = [...templates];
+    [newTemplates[currentIndex], newTemplates[currentIndex + 1]] =
+      [newTemplates[currentIndex + 1], newTemplates[currentIndex]];
+    setTemplates(newTemplates);
+    await saveTemplateOrder(newTemplates);
+  };
+
+  const handleMoveToTop = async (templateId: string) => {
+    const currentIndex = templates.findIndex(t => t.id === templateId);
+    if (currentIndex <= 0) return;
+
+    const templateToMove = templates[currentIndex];
+    const newTemplates = [
+      templateToMove,
+      ...templates.slice(0, currentIndex),
+      ...templates.slice(currentIndex + 1),
+    ];
+    setTemplates(newTemplates);
+    await saveTemplateOrder(newTemplates);
   };
 
   const handleEditMetadata = (templateId: string) => {
@@ -605,10 +709,12 @@ export default function TemplatesPage() {
             strategy={verticalListSortingStrategy}
           >
             <div className="space-y-6">
-              {templates.map((template) => (
+              {templates.map((template, index) => (
                 <SortableTemplateItem
                   key={template.id}
                   template={template}
+                  index={index}
+                  totalCount={templates.length}
                   editingMetadata={editingMetadata}
                   viewMode={viewMode}
                   isDeleting={deletingIds.has(template.id)}
@@ -620,6 +726,9 @@ export default function TemplatesPage() {
                   onSaveMetadata={handleSaveMetadata}
                   onCancelMetadata={handleCancelMetadata}
                   onMetadataChange={handleMetadataChange}
+                  onMoveUp={handleMoveUp}
+                  onMoveDown={handleMoveDown}
+                  onMoveToTop={handleMoveToTop}
                 />
               ))}
             </div>
