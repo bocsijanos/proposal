@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
         users: users.length,
         proposals: proposals.length,
         blockTemplates: blockTemplates.length,
-        blocks: proposals.reduce((sum, p) => sum + p.blocks.length, 0)
+        blocks: proposals.reduce((sum: number, p) => sum + p.blocks.length, 0)
       }
     });
 
