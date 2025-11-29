@@ -2,11 +2,34 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getToken } from 'next-auth/jwt';
+
+// Helper to get session from JWT token directly (works better with Next.js 16 App Router)
+async function getSessionFromToken(request: NextRequest) {
+  const token = await getToken({
+    req: request as any,
+    secret: process.env.NEXTAUTH_SECRET
+  });
+  if (!token) return null;
+  return {
+    user: {
+      id: token.id as string,
+      email: token.email as string,
+      name: token.name as string,
+      role: token.role as string,
+    }
+  };
+}
 
 // GET /api/block-templates - List all block templates
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    // Try getToken first (more reliable with App Router), fallback to getServerSession
+    let session = await getSessionFromToken(request);
+    if (!session) {
+      session = await getServerSession(authOptions);
+    }
+    console.log('🔍 GET /api/block-templates - Session:', session ? `${session.user?.email}` : 'NO SESSION');
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -37,10 +60,15 @@ export async function GET(request: NextRequest) {
 // POST /api/block-templates - Create a new template
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    // Try getToken first (more reliable with App Router), fallback to getServerSession
+    let session = await getSessionFromToken(request);
+    if (!session) {
+      session = await getServerSession(authOptions);
+    }
+    console.log('🔍 POST /api/block-templates - Session:', session ? `${session.user?.email}` : 'NO SESSION');
 
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized - Please log in' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -101,7 +129,11 @@ export async function POST(request: NextRequest) {
 // PATCH /api/block-templates - Update template order (bulk update)
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    // Try getToken first (more reliable with App Router), fallback to getServerSession
+    let session = await getSessionFromToken(request);
+    if (!session) {
+      session = await getServerSession(authOptions);
+    }
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

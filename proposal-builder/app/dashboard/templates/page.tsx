@@ -599,6 +599,7 @@ export default function TemplatesPage() {
       const response = await fetch('/api/block-templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
@@ -610,7 +611,8 @@ export default function TemplatesPage() {
         router.push(`/dashboard/templates/${result.id}/edit`);
       } else {
         const error = await response.json();
-        alert(`Hiba: ${error.error || 'Nem sikerült létrehozni'}`);
+        console.error('Template creation failed:', response.status, error);
+        alert(`Hiba (${response.status}): ${error.error || 'Nem sikerült létrehozni'}`);
       }
     } catch (error) {
       console.error('Error creating template:', error);
