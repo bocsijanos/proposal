@@ -5,9 +5,13 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createPrismaClient() {
-  // Prisma 6 with proper hot reload handling
+  // Use PRISMA_DATABASE_URL (Accelerate) if available, otherwise fallback to DATABASE_URL
+  // This is needed because Vercel serverless can't connect directly to db.prisma.io
+  const datasourceUrl = process.env.PRISMA_DATABASE_URL || process.env.DATABASE_URL;
+
   return new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+    datasourceUrl,
   })
 }
 
