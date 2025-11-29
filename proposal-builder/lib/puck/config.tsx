@@ -27,6 +27,7 @@ import {
   BadgeConfig,
   LogoItemConfig,
   TimelineStepConfig,
+  LogoCarouselConfig,
 } from './components';
 
 // Define component types for Puck
@@ -52,6 +53,7 @@ export type PuckComponentTypes = {
   Badge: typeof BadgeConfig;
   LogoItem: typeof LogoItemConfig;
   TimelineStep: typeof TimelineStepConfig;
+  LogoCarousel: typeof LogoCarouselConfig;
 };
 
 // Main Puck configuration with organized categories
@@ -59,7 +61,7 @@ export const puckConfig: Config = {
   categories: {
     blocks: {
       title: 'Építőelemek',
-      components: ['IconBox', 'PricingCard', 'Badge', 'LogoItem', 'TimelineStep'],
+      components: ['IconBox', 'PricingCard', 'Badge', 'LogoItem', 'TimelineStep', 'LogoCarousel'],
       defaultExpanded: true,
     },
     typography: {
@@ -87,6 +89,7 @@ export const puckConfig: Config = {
     Badge: BadgeConfig,
     LogoItem: LogoItemConfig,
     TimelineStep: TimelineStepConfig,
+    LogoCarousel: LogoCarouselConfig,
     // Typography
     Heading: HeadingConfig,
     BodyText: BodyTextConfig,
@@ -169,6 +172,7 @@ export const componentConfigs = {
   Badge: BadgeConfig,
   LogoItem: LogoItemConfig,
   TimelineStep: TimelineStepConfig,
+  LogoCarousel: LogoCarouselConfig,
   // Typography
   Heading: HeadingConfig,
   BodyText: BodyTextConfig,

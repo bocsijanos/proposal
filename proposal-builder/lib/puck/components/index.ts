@@ -25,3 +25,4 @@ export { PricingCardConfig } from './pricing-card';
 export { BadgeConfig } from './badge';
 export { LogoItemConfig } from './logo-item';
 export { TimelineStepConfig } from './timeline-step';
+export { LogoCarouselConfig } from './logo-carousel';
