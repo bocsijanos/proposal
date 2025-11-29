@@ -17,6 +17,9 @@ type HeadingColorValue =
   | 'white'        // Pure white
   | 'custom';      // Custom hex color
 
+// Font family options for heading
+type HeadingFontValue = 'default' | 'caveat';
+
 // ============== CÍMSOR KOMPONENS ==============
 
 interface HeadingProps {
@@ -25,6 +28,7 @@ interface HeadingProps {
   alignment: AlignmentValue;
   color: HeadingColorValue;
   customColor?: string;
+  fontFamily?: HeadingFontValue;
 }
 
 export const HeadingConfig: ComponentConfig<HeadingProps> = {
@@ -35,6 +39,7 @@ export const HeadingConfig: ComponentConfig<HeadingProps> = {
     level: 'h2',
     alignment: 'left',
     color: 'default',
+    fontFamily: 'default',
   },
 
   fields: {
@@ -81,9 +86,17 @@ export const HeadingConfig: ComponentConfig<HeadingProps> = {
       type: 'text',
       label: 'Egyedi szín (hex)',
     },
+    fontFamily: {
+      type: 'select',
+      label: 'Betűtípus',
+      options: [
+        { label: 'Alapértelmezett (brand)', value: 'default' },
+        { label: 'Caveat (kézírás)', value: 'caveat' },
+      ],
+    },
   },
 
-  render: ({ text = '', level = 'h2', alignment = 'left', color = 'default', customColor }) => {
+  render: ({ text = '', level = 'h2', alignment = 'left', color = 'default', customColor, fontFamily = 'default' }) => {
     const tokens = usePuckTokens();
     const headingId = React.useId();
     const safeId = headingId.replace(/:/g, '');
@@ -117,6 +130,19 @@ export const HeadingConfig: ComponentConfig<HeadingProps> = {
     const resolvedColor = getColor();
     const HeadingTag = level as React.ElementType;
 
+    // Resolve font family
+    const getFontFamily = (): string => {
+      switch (fontFamily) {
+        case 'caveat':
+          return 'var(--font-caveat), cursive';
+        case 'default':
+        default:
+          return tokens.fonts.heading;
+      }
+    };
+
+    const resolvedFontFamily = getFontFamily();
+
     // 3 lépcsős responsive: Desktop (>768px) → Tablet (480-768px) → Mobile (<480px)
     return (
       <>
@@ -127,7 +153,7 @@ export const HeadingConfig: ComponentConfig<HeadingProps> = {
           }
           .puck-heading-${safeId} {
             color: ${resolvedColor};
-            font-family: ${tokens.fonts.heading};
+            font-family: ${resolvedFontFamily};
             font-size: ${typography.size};
             line-height: ${typography.lineHeight};
             font-weight: ${typography.weight};
