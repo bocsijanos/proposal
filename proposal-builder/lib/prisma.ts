@@ -1,33 +1,34 @@
 import { PrismaClient } from '@prisma/client'
-import { withAccelerate } from '@prisma/extension-accelerate'
+import { PrismaPg } from '@prisma/adapter-pg'
+import { Pool } from 'pg'
 
 const globalForPrisma = globalThis as unknown as {
-  prisma: ReturnType<typeof createPrismaClient> | undefined
+  prisma: PrismaClient | undefined
+  pool: Pool | undefined
 }
 
 function createPrismaClient() {
-  // In production on Vercel, use PRISMA_DATABASE_URL (Accelerate) if available
-  // In development, use DATABASE_URL (direct connection)
-  const isProduction = process.env.NODE_ENV === 'production';
-  const useAccelerate = isProduction && process.env.PRISMA_DATABASE_URL;
+  // Create a PostgreSQL connection pool with settings for development
+  const pool = globalForPrisma.pool ?? new Pool({
+    connectionString: process.env.DATABASE_URL,
+    max: 3, // Limited for Prisma Dev compatibility (metadata + page + tracking)
+    min: 1, // Keep 1 connection ready
+    idleTimeoutMillis: 10000, // Close idle connections after 10s
+    connectionTimeoutMillis: 10000, // 10s timeout for new connections
+    allowExitOnIdle: false, // Don't exit on idle in development
+  })
 
-  const client = new PrismaClient({
-    log: isProduction ? ['error'] : ['error', 'warn'],
-    datasourceUrl: useAccelerate ? process.env.PRISMA_DATABASE_URL : process.env.DATABASE_URL,
-  });
-
-  // Use Accelerate extension in production for better serverless performance
-  if (useAccelerate) {
-    return client.$extends(withAccelerate());
+  if (process.env.NODE_ENV !== 'production') {
+    globalForPrisma.pool = pool
   }
 
-  return client;
-}
+  // Create the adapter
+  const adapter = new PrismaPg(pool)
 
-// In development, properly handle hot reload by disconnecting old client
-if (process.env.NODE_ENV !== 'production' && globalForPrisma.prisma) {
-  (globalForPrisma.prisma as unknown as PrismaClient).$disconnect().catch(() => {
-    // Ignore disconnect errors during hot reload
+  // Create Prisma Client with the adapter (required for Prisma 7.0.0)
+  return new PrismaClient({
+    adapter,
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
   })
 }
 
