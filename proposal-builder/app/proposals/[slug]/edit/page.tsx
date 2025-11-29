@@ -293,6 +293,79 @@ export default function EditProposalPage() {
     setViewMode('editor');
   };
 
+  // Handle toggle block enabled status
+  const handleToggleBlock = async (blockId: string, currentEnabled: boolean) => {
+    try {
+      const block = proposal.blocks.find(b => b.id === blockId);
+      if (!block) return;
+
+      await fetch(`/api/proposals/${proposalId}/blocks`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blocks: [{
+            id: blockId,
+            displayOrder: block.displayOrder,
+            isEnabled: !currentEnabled,
+          }],
+        }),
+      });
+
+      await fetchProposal();
+    } catch (error) {
+      console.error('Error toggling block:', error);
+    }
+  };
+
+  // Handle delete block
+  const handleDeleteBlock = async (blockId: string) => {
+    if (!confirm('Biztosan törölni szeretnéd ezt a blokkot?')) return;
+
+    try {
+      await fetch(`/api/proposals/${proposalId}/blocks?blockId=${blockId}`, {
+        method: 'DELETE',
+      });
+
+      await fetchProposal();
+    } catch (error) {
+      console.error('Error deleting block:', error);
+    }
+  };
+
+  // Handle move block up/down
+  const handleMoveBlock = async (blockId: string, direction: 'up' | 'down') => {
+    const sortedBlocks = [...proposal.blocks].sort((a, b) => a.displayOrder - b.displayOrder);
+    const currentIndex = sortedBlocks.findIndex(b => b.id === blockId);
+
+    if (direction === 'up' && currentIndex <= 0) return;
+    if (direction === 'down' && currentIndex >= sortedBlocks.length - 1) return;
+
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+    // Swap the blocks
+    const newBlocks = [...sortedBlocks];
+    [newBlocks[currentIndex], newBlocks[newIndex]] = [newBlocks[newIndex], newBlocks[currentIndex]];
+
+    // Update display orders
+    const blocksToUpdate = newBlocks.map((block, index) => ({
+      id: block.id,
+      displayOrder: index,
+      isEnabled: block.isEnabled,
+    }));
+
+    try {
+      await fetch(`/api/proposals/${proposalId}/blocks`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blocks: blocksToUpdate }),
+      });
+
+      await fetchProposal();
+    } catch (error) {
+      console.error('Error moving block:', error);
+    }
+  };
+
   // List View - shows blocks/templates with actions (like templates page)
   if (viewMode === 'list') {
     return (
@@ -422,14 +495,47 @@ export default function EditProposalPage() {
                       className="relative group"
                     >
                       {/* Sidebar Actions */}
-                      <div className="absolute -left-12 top-6 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2">
+                      <div className="absolute -left-14 top-4 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-1">
+                        {/* Move Up */}
                         <button
-                          onClick={() => handleBlockClick(block.id)}
+                          onClick={(e) => { e.stopPropagation(); handleMoveBlock(block.id, 'up'); }}
+                          disabled={index === 0}
+                          className="w-8 h-8 rounded border flex items-center justify-center bg-white border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Mozgatás fel"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                        {/* Move Down */}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleMoveBlock(block.id, 'down'); }}
+                          disabled={index === proposal.blocks.length - 1}
+                          className="w-8 h-8 rounded border flex items-center justify-center bg-white border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Mozgatás le"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                        {/* Edit */}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleBlockClick(block.id); }}
                           className="w-8 h-8 rounded border flex items-center justify-center bg-white border-[var(--color-border)] hover:border-[var(--color-primary)] hover:bg-blue-50"
-                          title="Szerkesztés Puck editorban"
+                          title="Szerkesztés"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                          </svg>
+                        </button>
+                        {/* Delete */}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDeleteBlock(block.id); }}
+                          className="w-8 h-8 rounded border flex items-center justify-center bg-white border-red-200 hover:border-red-500 hover:bg-red-50 text-red-500"
+                          title="Törlés"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                           </svg>
                         </button>
                       </div>
@@ -462,15 +568,16 @@ export default function EditProposalPage() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                // Toggle block enabled status would go here
+                                handleToggleBlock(block.id, block.isEnabled);
                               }}
-                              className={`px-3 py-1 text-xs font-medium rounded-full ${
+                              className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
                                 block.isEnabled
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-gray-100 text-gray-800'
+                                  ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                  : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
                               }`}
+                              title={block.isEnabled ? 'Kattints az inaktiváláshoz' : 'Kattints az aktiváláshoz'}
                             >
-                              {block.isEnabled ? 'Aktív' : 'Inaktív'}
+                              {block.isEnabled ? '✓ Aktív' : '○ Inaktív'}
                             </button>
                           </div>
                         </div>
