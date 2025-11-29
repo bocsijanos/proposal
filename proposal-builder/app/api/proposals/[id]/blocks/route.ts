@@ -28,14 +28,23 @@ export async function POST(
       );
     }
 
-    // Get the highest displayOrder for this proposal
-    const lastBlock = await prisma.proposalBlock.findFirst({
+    // NEW BLOCKS GO TO THE BEGINNING (displayOrder: 0)
+    // First, shift all existing blocks down by 1
+    const existingBlocks = await prisma.proposalBlock.findMany({
       where: { proposalId: id },
-      orderBy: { displayOrder: 'desc' },
-      select: { displayOrder: true },
+      orderBy: { displayOrder: 'asc' },
+      select: { id: true, displayOrder: true },
     });
 
-    const newDisplayOrder = (lastBlock?.displayOrder ?? -1) + 1;
+    // Shift existing blocks down
+    for (const block of existingBlocks) {
+      await prisma.proposalBlock.update({
+        where: { id: block.id },
+        data: { displayOrder: block.displayOrder + 1 },
+      });
+    }
+
+    const newDisplayOrder = 0; // New blocks always go to the beginning
 
     // Default content for PUCK_CONTENT
     const defaultContent = blockType === 'PUCK_CONTENT'

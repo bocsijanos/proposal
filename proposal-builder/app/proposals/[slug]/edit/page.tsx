@@ -112,7 +112,15 @@ export default function EditProposalPage() {
   };
 
   // Extract Puck data from proposal blocks
-  const getPuckDataFromProposal = useCallback((proposal: Proposal): Data => {
+  const getPuckDataFromProposal = useCallback((proposal: Proposal, blockId?: string | null): Data => {
+    // If a specific block is being edited, get that block's data
+    if (blockId) {
+      const block = proposal.blocks.find(b => b.id === blockId);
+      if (block?.content?.puckData) {
+        return block.content.puckData;
+      }
+    }
+
     // Find PUCK_CONTENT block if exists
     const puckBlock = proposal.blocks.find(b => b.blockType === 'PUCK_CONTENT');
 
@@ -132,27 +140,25 @@ export default function EditProposalPage() {
     const currentProposal = proposalRef.current;
     if (!currentProposal) return;
 
-    // Find existing PUCK_CONTENT block or create new one
-    const existingPuckBlock = currentProposal.blocks.find(b => b.blockType === 'PUCK_CONTENT');
+    // Find the block we're editing (if editingBlockId is set) or the PUCK_CONTENT block
+    const editingBlock = editingBlockId
+      ? currentProposal.blocks.find(b => b.id === editingBlockId)
+      : currentProposal.blocks.find(b => b.blockType === 'PUCK_CONTENT');
 
-    const blockData = {
-      blockType: 'PUCK_CONTENT',
-      displayOrder: 0,
-      isEnabled: true,
-      content: {
-        puckData: data,
-      },
-    };
-
-    if (existingPuckBlock) {
-      // Update existing block
+    if (editingBlock) {
+      // Update existing block - preserve displayOrder and isEnabled
       const response = await fetch(`/api/proposals/${proposalId}/blocks`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           blocks: [{
-            ...blockData,
-            id: existingPuckBlock.id,
+            id: editingBlock.id,
+            displayOrder: editingBlock.displayOrder, // Preserve original order!
+            isEnabled: editingBlock.isEnabled, // Preserve enabled status!
+            content: {
+              ...editingBlock.content,
+              puckData: data,
+            },
           }],
         }),
       });
@@ -161,18 +167,16 @@ export default function EditProposalPage() {
         throw new Error('Failed to save');
       }
     } else {
-      // Delete old blocks and create new PUCK_CONTENT block
-      for (const block of currentProposal.blocks) {
-        await fetch(`/api/proposals/${proposalId}/blocks?blockId=${block.id}`, {
-          method: 'DELETE',
-        });
-      }
-
-      // Create new PUCK_CONTENT block
+      // No existing block to edit - create new PUCK_CONTENT block
       const response = await fetch(`/api/proposals/${proposalId}/blocks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(blockData),
+        body: JSON.stringify({
+          blockType: 'PUCK_CONTENT',
+          content: {
+            puckData: data,
+          },
+        }),
       });
 
       if (!response.ok) {
@@ -182,7 +186,7 @@ export default function EditProposalPage() {
 
     // Refresh proposal data
     await fetchProposal();
-  }, [proposalId]);
+  }, [proposalId, editingBlockId]);
 
   // Handle save
   const handleSave = useCallback(async (data: Data): Promise<void> => {
@@ -263,7 +267,8 @@ export default function EditProposalPage() {
   }
 
   // Get initial Puck data
-  const initialData = getPuckDataFromProposal(proposal);
+  // Get initial data - if editing a specific block, use that block's data
+  const initialData = getPuckDataFromProposal(proposal, editingBlockId);
 
   // Get block name from template
   const getBlockName = (block: Proposal['blocks'][0]) => {
@@ -363,6 +368,41 @@ export default function EditProposalPage() {
       await fetchProposal();
     } catch (error) {
       console.error('Error moving block:', error);
+    }
+  };
+
+  // Handle move block to top
+  const handleMoveToTop = async (blockId: string) => {
+    const sortedBlocks = [...proposal.blocks].sort((a, b) => a.displayOrder - b.displayOrder);
+    const currentIndex = sortedBlocks.findIndex(b => b.id === blockId);
+
+    if (currentIndex <= 0) return; // Already at top
+
+    // Remove block from current position and add to beginning
+    const blockToMove = sortedBlocks[currentIndex];
+    const newBlocks = [
+      blockToMove,
+      ...sortedBlocks.slice(0, currentIndex),
+      ...sortedBlocks.slice(currentIndex + 1),
+    ];
+
+    // Update display orders
+    const blocksToUpdate = newBlocks.map((block, index) => ({
+      id: block.id,
+      displayOrder: index,
+      isEnabled: block.isEnabled,
+    }));
+
+    try {
+      await fetch(`/api/proposals/${proposalId}/blocks`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blocks: blocksToUpdate }),
+      });
+
+      await fetchProposal();
+    } catch (error) {
+      console.error('Error moving block to top:', error);
     }
   };
 
@@ -516,6 +556,17 @@ export default function EditProposalPage() {
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                        {/* Move to Top */}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleMoveToTop(block.id); }}
+                          disabled={index === 0}
+                          className="w-8 h-8 rounded border flex items-center justify-center bg-white border-[var(--color-border)] hover:border-green-500 hover:bg-green-50 disabled:opacity-30 disabled:cursor-not-allowed text-green-600"
+                          title="Küldés előre"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
                           </svg>
                         </button>
                         {/* Edit */}
