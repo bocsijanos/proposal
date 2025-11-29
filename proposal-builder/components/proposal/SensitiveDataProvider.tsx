@@ -47,7 +47,7 @@ export function SensitiveDataProvider({ slug, children }: SensitiveDataProviderP
   useEffect(() => {
     async function loadSensitiveData() {
       try {
-        const response = await fetch(`/api/proposals/${slug}/sensitive`);
+        const response = await fetch(`/api/sensitive/proposals/${slug}`);
         if (!response.ok) {
           throw new Error('Failed to load data');
         }

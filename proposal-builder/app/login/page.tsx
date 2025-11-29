@@ -107,15 +107,6 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-sm text-center text-[var(--color-muted)]">
-              Teszt bejelentkezés:
-            </p>
-            <div className="mt-2 space-y-1 text-xs text-center text-[var(--color-muted)]">
-              <div>admin@boommarketing.hu / admin123</div>
-              <div>admin@aiboost.hu / admin123</div>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}
