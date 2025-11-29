@@ -43,9 +43,9 @@ export async function GET(request: NextRequest) {
         queryTime: `${queryTime}ms`,
         serverTime: result[0]?.now,
         tablesCount: tablesResult.length,
-        tables: tablesResult.map(t => t.table_name),
+        tables: tablesResult.map((t: { table_name: string }) => t.table_name),
         enumTypesCount: typesResult.length,
-        enumTypes: typesResult.map(t => t.typname)
+        enumTypes: typesResult.map((t: { typname: string }) => t.typname)
       }
     });
 
