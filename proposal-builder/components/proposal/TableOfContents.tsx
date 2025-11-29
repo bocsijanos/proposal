@@ -58,9 +58,10 @@ function getBlockName(block: Block): string {
 export function TableOfContents({ blocks }: TableOfContentsProps) {
   const [activeSection, setActiveSection] = useState<string>('');
   const [isOpen, setIsOpen] = useState(false);
-  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(true);
+  const [hasShownIntro, setHasShownIntro] = useState(false);
   const tocRef = useRef<HTMLDivElement>(null);
 
+  // Intersection observer for active section tracking
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -78,7 +79,6 @@ export function TableOfContents({ blocks }: TableOfContentsProps) {
       }
     );
 
-    // Observe all block sections
     const sections = document.querySelectorAll('[data-block-id]');
     sections.forEach((section) => observer.observe(section));
 
@@ -87,11 +87,34 @@ export function TableOfContents({ blocks }: TableOfContentsProps) {
     };
   }, []);
 
-  // Close desktop TOC when clicking outside
+  // Desktop intro animation: show TOC briefly then collapse
+  useEffect(() => {
+    // Only run on desktop (xl breakpoint = 1280px)
+    const isDesktop = window.matchMedia('(min-width: 1280px)').matches;
+
+    if (isDesktop && !hasShownIntro) {
+      // Small delay before showing
+      const showTimer = setTimeout(() => {
+        setIsOpen(true);
+        setHasShownIntro(true);
+
+        // Auto-collapse after 2 seconds
+        const hideTimer = setTimeout(() => {
+          setIsOpen(false);
+        }, 2000);
+
+        return () => clearTimeout(hideTimer);
+      }, 800);
+
+      return () => clearTimeout(showTimer);
+    }
+  }, [hasShownIntro]);
+
+  // Close when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (tocRef.current && !tocRef.current.contains(event.target as Node)) {
-        setIsDesktopCollapsed(true);
+        setIsOpen(false);
       }
     };
 
@@ -113,181 +136,105 @@ export function TableOfContents({ blocks }: TableOfContentsProps) {
         behavior: 'smooth',
       });
 
-      // Close drawer/TOC after clicking
       setIsOpen(false);
-      setIsDesktopCollapsed(true);
     }
   };
 
   return (
-    <>
-      {/* Desktop: Fixed collapsible sidebar */}
-      <nav ref={tocRef} className="hidden xl:block fixed right-8 top-1/2 -translate-y-1/2 z-40">
-        <div className="relative">
-          {/* Collapsed state - just icon */}
+    <div ref={tocRef}>
+      {/* Floating Action Button - unified for all screen sizes */}
+      <button
+        onClick={() => setIsOpen(true)}
+        className={`
+          fixed bottom-6 right-6 z-50 w-14 h-14
+          bg-[var(--color-primary)] text-white rounded-full shadow-2xl
+          hover:scale-110 transition-all duration-300
+          flex items-center justify-center
+          ${isOpen ? 'opacity-0 pointer-events-none scale-90' : 'opacity-100'}
+        `}
+        aria-label="Tartalomjegyzék megnyitása"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      {/* Backdrop */}
+      <div
+        className={`
+          fixed inset-0 bg-black/50 z-50 backdrop-blur-sm
+          transition-opacity duration-300
+          ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+        `}
+        onClick={() => setIsOpen(false)}
+      />
+
+      {/* Drawer - unified design */}
+      <div
+        className={`
+          fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl
+          transition-transform duration-300 ease-out
+          ${isOpen ? 'translate-y-0' : 'translate-y-full'}
+        `}
+        style={{ maxHeight: '70vh' }}
+      >
+        {/* Handle bar */}
+        <div className="flex justify-center pt-3 pb-2">
+          <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-bold text-gray-900">
+            Tartalomjegyzék
+          </h3>
           <button
-            onClick={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
-            className={`
-              absolute right-0 top-0 w-12 h-12 rounded-full shadow-xl border border-gray-200
-              bg-white/95 backdrop-blur-lg flex items-center justify-center
-              transition-all duration-300 hover:scale-110 hover:shadow-2xl
-              ${isDesktopCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-            `}
-            aria-label="Tartalomjegyzék megnyitása"
+            onClick={() => setIsOpen(false)}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Bezárás"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
           </button>
-
-          {/* Expanded state - full TOC */}
-          <div
-            className={`
-              w-64 bg-white/95 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-200 p-6
-              transition-all duration-300 origin-right
-              ${isDesktopCollapsed
-                ? 'opacity-0 scale-95 translate-x-4 pointer-events-none'
-                : 'opacity-100 scale-100 translate-x-0'}
-            `}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
-                Tartalomjegyzék
-              </h3>
-              <button
-                onClick={() => setIsDesktopCollapsed(true)}
-                className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-                aria-label="Bezárás"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
-            <ul className="space-y-2">
-              {blocks.map((block) => {
-                const isActive = activeSection === block.id;
-                const blockName = getBlockName(block);
-
-                return (
-                  <li key={block.id}>
-                    <button
-                      onClick={() => scrollToBlock(block.id)}
-                      className={`
-                        w-full text-left px-3 py-2 rounded-full transition-all text-sm
-                        ${
-                          isActive
-                            ? 'bg-[var(--color-primary)] text-white font-semibold'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                        }
-                      `}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span
-                          className={`
-                          w-1.5 h-1.5 rounded-full flex-shrink-0
-                          ${isActive ? 'bg-white' : 'bg-gray-400'}
-                        `}
-                        />
-                        <span className="truncate">{blockName}</span>
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
         </div>
-      </nav>
 
-      {/* Mobile: FAB + Drawer */}
-      <div className="xl:hidden">
-        {/* Floating Action Button */}
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[var(--color-primary)] text-white rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center justify-center"
-          aria-label="Tartalomjegyzék megnyitása"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
+        {/* Content */}
+        <div className="overflow-y-auto px-6 py-4" style={{ maxHeight: 'calc(70vh - 120px)' }}>
+          <ul className="space-y-2">
+            {blocks.map((block) => {
+              const isActive = activeSection === block.id;
+              const blockName = getBlockName(block);
 
-        {/* Backdrop */}
-        {isOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
-            onClick={() => setIsOpen(false)}
-          />
-        )}
-
-        {/* Drawer */}
-        <div
-          className={`
-            fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl
-            transition-transform duration-300 ease-out
-            ${isOpen ? 'translate-y-0' : 'translate-y-full'}
-          `}
-          style={{ maxHeight: '70vh' }}
-        >
-          {/* Handle bar */}
-          <div className="flex justify-center pt-3 pb-2">
-            <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-          </div>
-
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-bold text-gray-900">
-              Tartalomjegyzék
-            </h3>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-              aria-label="Bezárás"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="overflow-y-auto px-6 py-4" style={{ maxHeight: 'calc(70vh - 120px)' }}>
-            <ul className="space-y-2">
-              {blocks.map((block) => {
-                const isActive = activeSection === block.id;
-                const blockName = getBlockName(block);
-
-                return (
-                  <li key={block.id}>
-                    <button
-                      onClick={() => scrollToBlock(block.id)}
-                      className={`
-                        w-full text-left px-4 py-3 rounded-full transition-all
-                        ${
-                          isActive
-                            ? 'bg-[var(--color-primary)] text-white font-semibold'
-                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                        }
+              return (
+                <li key={block.id}>
+                  <button
+                    onClick={() => scrollToBlock(block.id)}
+                    className={`
+                      w-full text-left px-4 py-3 rounded-full transition-all
+                      ${
+                        isActive
+                          ? 'bg-[var(--color-primary)] text-white font-semibold'
+                          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      }
+                    `}
+                  >
+                    <span className="flex items-center gap-3">
+                      <span
+                        className={`
+                        w-2 h-2 rounded-full flex-shrink-0
+                        ${isActive ? 'bg-white' : 'bg-gray-400'}
                       `}
-                    >
-                      <span className="flex items-center gap-3">
-                        <span
-                          className={`
-                          w-2 h-2 rounded-full flex-shrink-0
-                          ${isActive ? 'bg-white' : 'bg-gray-400'}
-                        `}
-                        />
-                        <span>{blockName}</span>
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+                      />
+                      <span>{blockName}</span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </div>
-    </>
+    </div>
   );
 }
