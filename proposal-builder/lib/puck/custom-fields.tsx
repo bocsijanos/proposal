@@ -826,7 +826,9 @@ export function createImagePickerField(): CustomField<string> {
         setIsLoading(true);
         setError(null);
         try {
-          const res = await fetch('/api/upload');
+          const res = await fetch('/api/upload', {
+            credentials: 'include',
+          });
           if (!res.ok) throw new Error('Failed to load images');
           const data = await res.json();
           setImages(data.images || []);
@@ -854,6 +856,7 @@ export function createImagePickerField(): CustomField<string> {
           const res = await fetch('/api/upload', {
             method: 'POST',
             body: formData,
+            credentials: 'include',
           });
 
           if (!res.ok) {

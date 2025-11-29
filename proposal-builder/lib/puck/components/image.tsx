@@ -9,6 +9,9 @@ interface ImageProps {
   src: string;
   alt: string;
   width: 'auto' | 'full' | 'half' | 'third';
+  height: 'auto' | 'small' | 'medium' | 'large' | 'xlarge' | 'custom';
+  customHeight?: number;
+  objectFit: 'cover' | 'contain' | 'fill';
   alignment: 'left' | 'center' | 'right';
   borderRadius: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
   shadow: 'none' | 'subtle' | 'medium' | 'large';
@@ -22,6 +25,9 @@ export const ImageConfig: ComponentConfig<ImageProps> = {
     src: '',
     alt: 'Kép leírása',
     width: 'full',
+    height: 'auto',
+    customHeight: 300,
+    objectFit: 'cover',
     alignment: 'center',
     borderRadius: 'md',
     shadow: 'subtle',
@@ -45,6 +51,33 @@ export const ImageConfig: ComponentConfig<ImageProps> = {
         { label: '████ 100%', value: 'full' },
         { label: '██ 50%', value: 'half' },
         { label: '█ 33%', value: 'third' },
+      ],
+    },
+    height: {
+      type: 'select',
+      label: 'Magasság',
+      options: [
+        { label: 'Automatikus', value: 'auto' },
+        { label: 'Kicsi (150px)', value: 'small' },
+        { label: 'Közepes (250px)', value: 'medium' },
+        { label: 'Nagy (400px)', value: 'large' },
+        { label: 'Extra nagy (600px)', value: 'xlarge' },
+        { label: 'Egyedi...', value: 'custom' },
+      ],
+    },
+    customHeight: {
+      type: 'number',
+      label: 'Egyedi magasság (px)',
+      min: 50,
+      max: 1200,
+    },
+    objectFit: {
+      type: 'radio',
+      label: 'Kép illeszkedés',
+      options: [
+        { label: 'Kitöltés (levágás)', value: 'cover' },
+        { label: 'Beillesztés (teljes)', value: 'contain' },
+        { label: 'Nyújtás', value: 'fill' },
       ],
     },
     alignment: {
@@ -77,7 +110,7 @@ export const ImageConfig: ComponentConfig<ImageProps> = {
     },
   },
 
-  render: ({ src, alt, width, alignment, borderRadius, shadow, caption }) => {
+  render: ({ src, alt, width, height, customHeight, objectFit, alignment, borderRadius, shadow, caption }) => {
     const tokens = usePuckTokens();
 
     const widthMap = {
@@ -85,6 +118,15 @@ export const ImageConfig: ComponentConfig<ImageProps> = {
       full: '100%',
       half: '50%',
       third: '33.333%',
+    };
+
+    const heightMap: Record<string, string> = {
+      auto: 'auto',
+      small: '150px',
+      medium: '250px',
+      large: '400px',
+      xlarge: '600px',
+      custom: `${customHeight || 300}px`,
     };
 
     const alignmentMap = {
@@ -109,6 +151,9 @@ export const ImageConfig: ComponentConfig<ImageProps> = {
       large: tokens.shadows.large,
     };
 
+    const computedHeight = heightMap[height || 'auto'];
+    const hasFixedHeight = height && height !== 'auto';
+
     return (
       <figure
         style={{
@@ -125,7 +170,8 @@ export const ImageConfig: ComponentConfig<ImageProps> = {
           style={{
             width: widthMap[width],
             maxWidth: '100%',
-            height: 'auto',
+            height: computedHeight,
+            objectFit: hasFixedHeight ? (objectFit || 'cover') : undefined,
             borderRadius: radiusMap[borderRadius],
             boxShadow: shadowMap[shadow],
             display: 'block',
