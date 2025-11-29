@@ -18,6 +18,7 @@ import {
   SpacerConfig,
   DividerConfig,
   ImageConfig,
+  AvatarImageConfig,
   ListConfig,
   StatsConfig,
   // Modular building blocks
@@ -42,6 +43,7 @@ export type PuckComponentTypes = {
   Spacer: typeof SpacerConfig;
   Divider: typeof DividerConfig;
   Image: typeof ImageConfig;
+  AvatarImage: typeof AvatarImageConfig;
   List: typeof ListConfig;
   Stats: typeof StatsConfig;
   // Modular building blocks
@@ -74,7 +76,7 @@ export const puckConfig: Config = {
     },
     content: {
       title: 'Tartalom',
-      components: ['Image', 'List', 'Stats', 'Spacer', 'Divider'],
+      components: ['Image', 'AvatarImage', 'List', 'Stats', 'Spacer', 'Divider'],
     },
   },
 
@@ -101,6 +103,7 @@ export const puckConfig: Config = {
     Spacer: SpacerConfig,
     Divider: DividerConfig,
     Image: ImageConfig,
+    AvatarImage: AvatarImageConfig,
     List: ListConfig,
     Stats: StatsConfig,
   },
@@ -182,6 +185,7 @@ export const componentConfigs = {
   Spacer: SpacerConfig,
   Divider: DividerConfig,
   Image: ImageConfig,
+  AvatarImage: AvatarImageConfig,
   List: ListConfig,
   Stats: StatsConfig,
 };

@@ -15,6 +15,7 @@ export { GradientSectionConfig } from './gradient-section';
 export { SpacerConfig } from './spacer';
 export { DividerConfig } from './divider';
 export { ImageConfig } from './image';
+export { AvatarImageConfig } from './avatar';
 export { ListConfig } from './list';
 export { StatsConfig } from './stats';
 

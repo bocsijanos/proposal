@@ -262,48 +262,6 @@ export const BodyTextConfig: ComponentConfig<BodyTextProps> = {
       }
     };
 
-    // Parse text to detect image URLs and render them as images
-    const renderContent = () => {
-      // Split text by lines
-      const lines = text.split('\n');
-      return lines.map((line, index) => {
-        const trimmedLine = line.trim();
-        // Check if the line is an image URL (cloudinary, common image extensions, or data URL)
-        const isImageUrl =
-          trimmedLine.startsWith('https://res.cloudinary.com/') ||
-          trimmedLine.startsWith('data:image/') ||
-          /^https?:\/\/.*\.(png|jpg|jpeg|gif|webp|svg)(\?.*)?$/i.test(trimmedLine);
-
-        if (isImageUrl && trimmedLine) {
-          return (
-            <React.Fragment key={index}>
-              <img
-                src={trimmedLine}
-                alt="Avatar"
-                style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  display: 'inline-block',
-                  verticalAlign: 'middle',
-                  marginRight: '8px',
-                }}
-              />
-              {index < lines.length - 1 && '\n'}
-            </React.Fragment>
-          );
-        }
-        // Regular text line
-        return (
-          <React.Fragment key={index}>
-            {line}
-            {index < lines.length - 1 && '\n'}
-          </React.Fragment>
-        );
-      });
-    };
-
     return (
       <p
         style={{
@@ -317,7 +275,7 @@ export const BodyTextConfig: ComponentConfig<BodyTextProps> = {
           whiteSpace: 'pre-line',
         }}
       >
-        {renderContent()}
+        {text}
       </p>
     );
   },
