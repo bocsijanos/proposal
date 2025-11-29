@@ -7,6 +7,8 @@ import { createButtonVariantField } from '../custom-fields';
 
 type SizeValue = 'small' | 'medium' | 'large';
 type AlignmentValue = 'left' | 'center' | 'right';
+type ActionType = 'link' | 'scroll';
+type ScrollTarget = 'next' | 'prev' | 'top' | 'bottom' | 'custom';
 
 interface ButtonProps {
   label: string;
@@ -15,7 +17,11 @@ interface ButtonProps {
   fullWidth: boolean;
   icon?: string;
   iconPosition: 'left' | 'right';
+  actionType: ActionType;
   href?: string;
+  scrollTarget: ScrollTarget;
+  customScrollId?: string;
+  scrollOffset: number;
   alignment: AlignmentValue;
 }
 
@@ -29,38 +35,42 @@ export const ButtonConfig: ComponentConfig<ButtonProps> = {
     fullWidth: false,
     icon: '',
     iconPosition: 'left',
+    actionType: 'link',
     href: '',
+    scrollTarget: 'next',
+    customScrollId: '',
+    scrollOffset: 0,
     alignment: 'left',
   },
 
   fields: {
     label: {
       type: 'text',
-      label: 'Gomb szöveg',
+      label: 'Gomb szoveg',
     },
     variant: {
       ...createButtonVariantField([
-        { value: 'primary', label: 'Elsődleges', preview: { bg: '#fa604a', color: '#fff' } },
-        { value: 'secondary', label: 'Másodlagos', preview: { bg: '#18181b', color: '#fff' } },
-        { value: 'outline', label: 'Körvonal', preview: { bg: 'transparent', color: '#18181b', border: '2px solid #18181b' } },
-        { value: 'outline-light', label: 'Körvonal (fehér)', preview: { bg: '#3e4581', color: '#fff', border: '2px solid #fff' } },
+        { value: 'primary', label: 'Elsodleges', preview: { bg: '#fa604a', color: '#fff' } },
+        { value: 'secondary', label: 'Masodlagos', preview: { bg: '#18181b', color: '#fff' } },
+        { value: 'outline', label: 'Korvonal', preview: { bg: 'transparent', color: '#18181b', border: '2px solid #18181b' } },
+        { value: 'outline-light', label: 'Korvonal (feher)', preview: { bg: '#3e4581', color: '#fff', border: '2px solid #fff' } },
         { value: 'ghost', label: 'Szellem', preview: { bg: '#f3f4f6', color: '#374151' } },
         { value: 'link', label: 'Link', preview: { bg: 'transparent', color: '#3b82f6' } },
       ]) as any,
-      label: 'Variáns',
+      label: 'Varians',
     },
     size: {
       type: 'select',
-      label: 'Méret',
+      label: 'Meret',
       options: [
         { value: 'small', label: 'Kicsi' },
-        { value: 'medium', label: 'Közepes' },
+        { value: 'medium', label: 'Kozepes' },
         { value: 'large', label: 'Nagy' },
       ],
     },
     fullWidth: {
       type: 'radio',
-      label: 'Teljes szélesség',
+      label: 'Teljes szelesseg',
       options: [
         { label: 'Nem', value: false },
         { label: 'Igen', value: true },
@@ -72,29 +82,115 @@ export const ButtonConfig: ComponentConfig<ButtonProps> = {
     },
     iconPosition: {
       type: 'radio',
-      label: 'Ikon pozíció',
+      label: 'Ikon pozicio',
       options: [
-        { label: '⬅️ Bal', value: 'left' },
-        { label: 'Jobb ➡️', value: 'right' },
+        { label: 'Bal', value: 'left' },
+        { label: 'Jobb', value: 'right' },
+      ],
+    },
+    actionType: {
+      type: 'radio',
+      label: 'Muvelet tipusa',
+      options: [
+        { label: 'Link (URL)', value: 'link' },
+        { label: 'Gorgetes', value: 'scroll' },
       ],
     },
     href: {
       type: 'text',
-      label: 'Link URL (opcionális)',
+      label: 'Link URL',
+    },
+    scrollTarget: {
+      type: 'select',
+      label: 'Gorgetes celpontja',
+      options: [
+        { value: 'next', label: 'Kovetkezo blokk' },
+        { value: 'prev', label: 'Elozo blokk' },
+        { value: 'top', label: 'Oldal teteje' },
+        { value: 'bottom', label: 'Oldal alja' },
+        { value: 'custom', label: 'Egyedi elem ID' },
+      ],
+    },
+    customScrollId: {
+      type: 'text',
+      label: 'Elem ID (# nelkul)',
+    },
+    scrollOffset: {
+      type: 'number',
+      label: 'Gorgetes offset (px)',
+      min: -200,
+      max: 200,
     },
     alignment: {
       type: 'select',
-      label: 'Igazítás',
+      label: 'Igazitas',
       options: [
         { label: 'Balra', value: 'left' },
-        { label: 'Középre', value: 'center' },
+        { label: 'Kozepre', value: 'center' },
         { label: 'Jobbra', value: 'right' },
       ],
     },
   },
 
-  render: ({ label = '', variant = 'primary', size = 'medium', fullWidth = false, icon, iconPosition = 'left', href, alignment = 'left' }) => {
+  render: ({
+    label = '',
+    variant = 'primary',
+    size = 'medium',
+    fullWidth = false,
+    icon,
+    iconPosition = 'left',
+    actionType = 'link',
+    href,
+    scrollTarget = 'next',
+    customScrollId = '',
+    scrollOffset = 0,
+    alignment = 'left',
+  }) => {
     const tokens = usePuckTokens();
+
+    // Handle scroll action
+    const handleScroll = (e: React.MouseEvent) => {
+      e.preventDefault();
+
+      let targetElement: Element | null = null;
+
+      switch (scrollTarget) {
+        case 'next': {
+          // Find the parent Puck component container and get the next sibling
+          const button = e.currentTarget as HTMLElement;
+          const puckComponent = button.closest('[data-puck-component]');
+          if (puckComponent) {
+            targetElement = puckComponent.nextElementSibling;
+          }
+          break;
+        }
+        case 'prev': {
+          const button = e.currentTarget as HTMLElement;
+          const puckComponent = button.closest('[data-puck-component]');
+          if (puckComponent) {
+            targetElement = puckComponent.previousElementSibling;
+          }
+          break;
+        }
+        case 'top':
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        case 'bottom':
+          window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+          return;
+        case 'custom':
+          if (customScrollId) {
+            targetElement = document.getElementById(customScrollId);
+          }
+          break;
+      }
+
+      if (targetElement) {
+        const rect = targetElement.getBoundingClientRect();
+        const absoluteTop = window.pageYOffset + rect.top + scrollOffset;
+        window.scrollTo({ top: absoluteTop, behavior: 'smooth' });
+      }
+    };
 
     // Use brand-specific button styles
     const getVariantStyles = () => {
@@ -201,13 +297,26 @@ export const ButtonConfig: ComponentConfig<ButtonProps> = {
       </>
     );
 
-    const buttonElement = href ? (
-      <a href={href} style={buttonStyles}>
-        {content}
-      </a>
-    ) : (
-      <button style={buttonStyles}>{content}</button>
-    );
+    let buttonElement: React.ReactNode;
+
+    if (actionType === 'scroll') {
+      // Scroll action - use button with onClick
+      buttonElement = (
+        <button style={buttonStyles} onClick={handleScroll} type="button">
+          {content}
+        </button>
+      );
+    } else if (href) {
+      // Link action with URL
+      buttonElement = (
+        <a href={href} style={buttonStyles}>
+          {content}
+        </a>
+      );
+    } else {
+      // No action - plain button
+      buttonElement = <button style={buttonStyles}>{content}</button>;
+    }
 
     // Wrap in alignment container if not full width
     if (!fullWidth) {
