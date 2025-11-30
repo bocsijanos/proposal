@@ -579,7 +579,7 @@ function TestimonialCard({
           <div
             style={{
               fontWeight: 600,
-              fontSize: tokens.typography.small.size,
+              fontSize: tokens.typography.bodySmall.size,
               color: textColor,
               fontFamily: tokens.fonts.body,
             }}
@@ -589,7 +589,7 @@ function TestimonialCard({
           {testimonial.companyName && (
             <div
               style={{
-                fontSize: tokens.typography.small.size,
+                fontSize: tokens.typography.bodySmall.size,
                 color: mutedColor,
                 fontFamily: tokens.fonts.body,
               }}
