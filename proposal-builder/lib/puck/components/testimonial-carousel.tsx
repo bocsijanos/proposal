@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ComponentConfig } from '@measured/puck';
 import { usePuckTokens } from '../brand-context';
 import { createImagePickerField } from '../custom-fields';
@@ -16,20 +16,12 @@ interface TestimonialCarouselProps {
   title?: string;
   showTitle: boolean;
   testimonials: TestimonialItem[];
-  speed: 'slow' | 'medium' | 'fast';
-  direction: 'left' | 'right';
-  pauseOnHover: boolean;
-  cardWidth: 'small' | 'medium' | 'large';
   gap: 'small' | 'medium' | 'large';
   backgroundColor: 'transparent' | 'light' | 'dark';
   cardStyle: 'minimal' | 'bordered' | 'elevated';
   showQuoteIcon: boolean;
   paddingY: 'none' | 'small' | 'medium' | 'large';
 }
-
-// Unique ID generator for keyframes
-let carouselId = 0;
-const getCarouselId = () => `testimonial-carousel-${++carouselId}`;
 
 export const TestimonialCarouselConfig: ComponentConfig<TestimonialCarouselProps> = {
   label: 'Vélemény forgató',
@@ -81,10 +73,6 @@ export const TestimonialCarouselConfig: ComponentConfig<TestimonialCarouselProps
         authorImage: '',
       },
     ],
-    speed: 'slow',
-    direction: 'left',
-    pauseOnHover: true,
-    cardWidth: 'medium',
     gap: 'medium',
     backgroundColor: 'transparent',
     cardStyle: 'elevated',
@@ -128,40 +116,6 @@ export const TestimonialCarouselConfig: ComponentConfig<TestimonialCarouselProps
           label: 'Kép (opcionális)',
         },
       },
-    },
-    speed: {
-      type: 'radio',
-      label: 'Sebesség',
-      options: [
-        { label: '🐢 Lassú', value: 'slow' },
-        { label: '🚶 Közepes', value: 'medium' },
-        { label: '🏃 Gyors', value: 'fast' },
-      ],
-    },
-    direction: {
-      type: 'radio',
-      label: 'Irány',
-      options: [
-        { label: '← Balra', value: 'left' },
-        { label: '→ Jobbra', value: 'right' },
-      ],
-    },
-    pauseOnHover: {
-      type: 'radio',
-      label: 'Megáll hover-nél',
-      options: [
-        { label: 'Igen', value: true },
-        { label: 'Nem', value: false },
-      ],
-    },
-    cardWidth: {
-      type: 'radio',
-      label: 'Kártya szélesség',
-      options: [
-        { label: 'Keskeny', value: 'small' },
-        { label: 'Közepes', value: 'medium' },
-        { label: 'Széles', value: 'large' },
-      ],
     },
     gap: {
       type: 'radio',
@@ -214,10 +168,6 @@ export const TestimonialCarouselConfig: ComponentConfig<TestimonialCarouselProps
     title,
     showTitle,
     testimonials,
-    speed,
-    direction,
-    pauseOnHover,
-    cardWidth,
     gap,
     backgroundColor,
     cardStyle,
@@ -225,39 +175,52 @@ export const TestimonialCarouselConfig: ComponentConfig<TestimonialCarouselProps
     paddingY,
   }) => {
     const tokens = usePuckTokens();
-    const carouselIdRef = React.useRef(getCarouselId());
-    const animationName = carouselIdRef.current;
+    const [currentPage, setCurrentPage] = useState(0);
 
-    // Handle single testimonial case - show centered without animation
+    // Gap mapping
+    const gapMap = {
+      small: tokens.spacing.md,
+      medium: tokens.spacing.lg,
+      large: tokens.spacing.xl,
+    };
+
+    // Padding mapping
+    const paddingMap = {
+      none: '0',
+      small: tokens.spacing.md,
+      medium: tokens.spacing.xl,
+      large: tokens.spacing['2xl'],
+    };
+
+    // Background color mapping
+    const bgMap = {
+      transparent: 'transparent',
+      light: tokens.colors.backgroundAlt,
+      dark: tokens.colors.backgroundDark,
+    };
+
+    const isDark = backgroundColor === 'dark';
+    const textColor = isDark ? tokens.colors.textLight : tokens.colors.text;
+    const mutedColor = isDark ? 'rgba(255,255,255,0.7)' : tokens.colors.muted;
+    const gapValue = gapMap[gap];
+    const paddingValue = paddingMap[paddingY];
+    const bgColor = bgMap[backgroundColor];
+
+    // Calculate pages (2 items per page on desktop, 1 on mobile)
+    const itemsPerPage = 2;
+    const totalPages = Math.ceil(testimonials.length / itemsPerPage);
+
+    // Handle single testimonial case - show centered
     if (testimonials.length === 1) {
       const testimonial = testimonials[0];
-      const isDark = backgroundColor === 'dark';
-      const textColor = isDark ? tokens.colors.textLight : tokens.colors.text;
-      const mutedColor = isDark ? 'rgba(255,255,255,0.7)' : tokens.colors.muted;
-
-      // Background color mapping
-      const bgMap = {
-        transparent: 'transparent',
-        light: tokens.colors.backgroundAlt,
-        dark: tokens.colors.backgroundDark,
-      };
-
-      // Padding mapping
-      const paddingMap = {
-        none: '0',
-        small: tokens.spacing.md,
-        medium: tokens.spacing.xl,
-        large: tokens.spacing['2xl'],
-      };
-
       return (
         <div
           style={{
             width: '100vw',
             marginLeft: 'calc(-50vw + 50%)',
-            background: bgMap[backgroundColor],
-            paddingTop: paddingMap[paddingY],
-            paddingBottom: paddingMap[paddingY],
+            background: bgColor,
+            paddingTop: paddingValue,
+            paddingBottom: paddingValue,
           }}
         >
           {showTitle && title && (
@@ -296,8 +259,8 @@ export const TestimonialCarouselConfig: ComponentConfig<TestimonialCarouselProps
       );
     }
 
-    // Need at least 2 testimonials for carousel effect
-    if (testimonials.length < 2) {
+    // No testimonials
+    if (testimonials.length < 1) {
       return (
         <div
           style={{
@@ -314,54 +277,17 @@ export const TestimonialCarouselConfig: ComponentConfig<TestimonialCarouselProps
       );
     }
 
-    // Speed mapping (animation duration in seconds)
-    const speedMap = {
-      slow: 60,
-      medium: 40,
-      fast: 25,
+    // Get current page testimonials
+    const startIdx = currentPage * itemsPerPage;
+    const currentTestimonials = testimonials.slice(startIdx, startIdx + itemsPerPage);
+
+    const goToPrev = () => {
+      setCurrentPage((prev) => (prev === 0 ? totalPages - 1 : prev - 1));
     };
 
-    // Card width mapping
-    const widthMap = {
-      small: '320px',
-      medium: '420px',
-      large: '520px',
+    const goToNext = () => {
+      setCurrentPage((prev) => (prev === totalPages - 1 ? 0 : prev + 1));
     };
-
-    // Gap mapping
-    const gapMap = {
-      small: tokens.spacing.md,
-      medium: tokens.spacing.lg,
-      large: tokens.spacing.xl,
-    };
-
-    // Padding mapping
-    const paddingMap = {
-      none: '0',
-      small: tokens.spacing.md,
-      medium: tokens.spacing.xl,
-      large: tokens.spacing['2xl'],
-    };
-
-    // Background color mapping
-    const bgMap = {
-      transparent: 'transparent',
-      light: tokens.colors.backgroundAlt,
-      dark: tokens.colors.backgroundDark,
-    };
-
-    const isDark = backgroundColor === 'dark';
-    const textColor = isDark ? tokens.colors.textLight : tokens.colors.text;
-    const mutedColor = isDark ? 'rgba(255,255,255,0.7)' : tokens.colors.muted;
-
-    const animationDuration = `${speedMap[speed]}s`;
-    const cardWidthValue = widthMap[cardWidth];
-    const gapValue = gapMap[gap];
-    const paddingValue = paddingMap[paddingY];
-    const bgColor = bgMap[backgroundColor];
-
-    // Double the testimonials array for seamless infinite scroll
-    const displayTestimonials = [...testimonials, ...testimonials];
 
     return (
       <div
@@ -371,7 +297,6 @@ export const TestimonialCarouselConfig: ComponentConfig<TestimonialCarouselProps
           background: bgColor,
           paddingTop: paddingValue,
           paddingBottom: paddingValue,
-          overflow: 'hidden',
         }}
       >
         {/* Title */}
@@ -393,34 +318,125 @@ export const TestimonialCarouselConfig: ComponentConfig<TestimonialCarouselProps
 
         {/* Carousel container */}
         <div
-          className={pauseOnHover ? 'testimonial-carousel-hover' : undefined}
           style={{
-            width: '100%',
-            overflow: 'hidden',
-            maskImage:
-              'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
-            WebkitMaskImage:
-              'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
+            maxWidth: '1200px',
+            margin: '0 auto',
+            padding: `0 ${tokens.spacing.xl}`,
+            position: 'relative',
           }}
         >
-          {/* Scrolling track */}
+          {/* Navigation arrows - desktop */}
+          {totalPages > 1 && (
+            <>
+              <button
+                onClick={goToPrev}
+                style={{
+                  position: 'absolute',
+                  left: '0',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: isDark ? 'rgba(255,255,255,0.1)' : tokens.colors.background,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 10,
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = isDark
+                    ? 'rgba(255,255,255,0.2)'
+                    : tokens.colors.backgroundAlt;
+                  e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = isDark
+                    ? 'rgba(255,255,255,0.1)'
+                    : tokens.colors.background;
+                  e.currentTarget.style.transform = 'translateY(-50%)';
+                }}
+                aria-label="Előző"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={textColor}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+
+              <button
+                onClick={goToNext}
+                style={{
+                  position: 'absolute',
+                  right: '0',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  background: isDark ? 'rgba(255,255,255,0.1)' : tokens.colors.background,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 10,
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = isDark
+                    ? 'rgba(255,255,255,0.2)'
+                    : tokens.colors.backgroundAlt;
+                  e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = isDark
+                    ? 'rgba(255,255,255,0.1)'
+                    : tokens.colors.background;
+                  e.currentTarget.style.transform = 'translateY(-50%)';
+                }}
+                aria-label="Következő"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={textColor}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </button>
+            </>
+          )}
+
+          {/* Cards grid */}
           <div
             style={{
-              display: 'flex',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
               gap: gapValue,
-              width: 'max-content',
-              animation: `${animationName} ${animationDuration} linear infinite`,
-              animationDirection: direction === 'right' ? 'reverse' : 'normal',
+              padding: '0 60px',
             }}
           >
-            {displayTestimonials.map((testimonial, index) => (
-              <div
-                key={`${testimonial.authorName}-${index}`}
-                style={{
-                  flexShrink: 0,
-                  width: cardWidthValue,
-                }}
-              >
+            {currentTestimonials.map((testimonial, index) => (
+              <div key={`${testimonial.authorName}-${startIdx + index}`}>
                 <TestimonialCard
                   testimonial={testimonial}
                   tokens={tokens}
@@ -433,21 +449,49 @@ export const TestimonialCarouselConfig: ComponentConfig<TestimonialCarouselProps
               </div>
             ))}
           </div>
+
+          {/* Page indicators */}
+          {totalPages > 1 && (
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: tokens.spacing.sm,
+                marginTop: tokens.spacing.lg,
+              }}
+            >
+              {Array.from({ length: totalPages }).map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentPage(idx)}
+                  style={{
+                    width: currentPage === idx ? '24px' : '8px',
+                    height: '8px',
+                    borderRadius: '4px',
+                    border: 'none',
+                    background:
+                      currentPage === idx
+                        ? tokens.colors.primary
+                        : isDark
+                          ? 'rgba(255,255,255,0.3)'
+                          : tokens.colors.border,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    padding: 0,
+                  }}
+                  aria-label={`Oldal ${idx + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* CSS Keyframes */}
+        {/* Responsive styles */}
         <style>{`
-          @keyframes ${animationName} {
-            0% {
-              transform: translateX(0);
+          @media (max-width: 768px) {
+            .testimonial-grid {
+              grid-template-columns: 1fr !important;
             }
-            100% {
-              transform: translateX(-50%);
-            }
-          }
-
-          .testimonial-carousel-hover:hover > div {
-            animation-play-state: paused;
           }
         `}</style>
       </div>
